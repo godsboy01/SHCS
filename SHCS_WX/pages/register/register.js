@@ -1,5 +1,5 @@
 // 引入必要的库
-import api from '../../utils/api';
+const api = require('../../utils/api');
 const app = getApp();
 
 Page({

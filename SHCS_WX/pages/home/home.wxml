@@ -2,35 +2,79 @@
 <view class="page">
 
   <!-- pages/home/home.wxml -->
-  <navigation-bar title="首页" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
-    <view slot="right">
-      <button>设置</button>
-    </view>
-  </navigation-bar>
+  <navigation-bar 
+    title="智能居家护理系统" 
+    background="#4CAF50" 
+    color="#ffffff"
+  />
   <view class="container">
-    <!-- 顶部导航栏 -->
-    <view class="navbar">
-      <text class="family-name">{{familyName}}的家</text>
-    </view>
-
-    <!-- 温度模块 -->
-    <view class="temperature">
-      <text class="temperature-text">{{temperature}}°C</text>
-      <text class="location">{{location}}</text>
-      <view class="weather-icon">
-        <image class="icon" src="{{weatherIcon}}"></image> <!-- 新增天气图标 -->
-      </view>
-      <text class="weather-description">{{weatherDescription}}</text> <!-- 新增天气描述 -->
-    </view>
-
-    <!-- 设备模块 -->
-    <view class="device-grid">
-      <block wx:for="{{devices}}" wx:key="id">
-        <view class="device-item" bindtap="onDeviceTap" data-item="{{item}}">
-          <image class="device-icon" src="{{item.icon}}"></image>
-          <text class="device-name">{{item.name}}</text>
+    <!-- 天气小组件区域 -->
+    <view class="weather-widget">
+      <view class="weather-info">
+        <view class="temp-wrap">
+          <text class="temperature">{{weather.temp}}°</text>
+          <text class="weather-text">{{weather.text}}</text>
         </view>
-      </block>
+        <view class="location-wrap">
+          <text class="location">{{weather.location}}</text>
+          <text class="date">{{weather.date}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 设备快捷入口区域 -->
+    <view class="devices-grid">
+      <!-- 摄像头设备 -->
+      <view class="device-card" wx:for="{{cameras}}" wx:key="device_id" 
+            bindtap="navigateToDevice" data-id="{{item.device_id}}" data-type="camera">
+        <view class="device-icon">
+          <image src="/assets/icon/camera.png" mode="aspectFit"/>
+        </view>
+        <view class="device-info">
+          <text class="device-name">{{item.device_name}}</text>
+          <text class="device-status {{item.status === 'online' ? 'online' : ''}}">
+            {{item.status === 'online' ? '在线' : '离线'}}
+          </text>
+        </view>
+      </view>
+
+      <!-- 体重计 -->
+      <view class="device-card" wx:for="{{weightScales}}" wx:key="device_id"
+            bindtap="navigateToDevice" data-id="{{item.device_id}}" data-type="weight_scale">
+        <view class="device-icon">
+          <image src="/assets/icon/weight_scale.png" mode="aspectFit"/>
+        </view>
+        <view class="device-info">
+          <text class="device-name">{{item.device_name}}</text>
+          <text class="device-status {{item.status === 'online' ? 'online' : ''}}">
+            {{item.status === 'online' ? '在线' : '离线'}}
+          </text>
+        </view>
+      </view>
+
+      <!-- 血压计 -->
+      <view class="device-card" wx:for="{{bloodPressures}}" wx:key="device_id"
+            bindtap="navigateToDevice" data-id="{{item.device_id}}" data-type="blood_pressure">
+        <view class="device-icon">
+          <image src="/assets/icon/blood_pressure.png" mode="aspectFit"/>
+        </view>
+        <view class="device-info">
+          <text class="device-name">{{item.device_name}}</text>
+          <text class="device-status {{item.status === 'online' ? 'online' : ''}}">
+            {{item.status === 'online' ? '在线' : '离线'}}
+          </text>
+        </view>
+      </view>
+
+      <!-- 添加设备卡片 -->
+      <view class="device-card add-card" bindtap="navigateToDeviceManage">
+        <view class="device-icon">
+          <image src="/assets/icon/list.png" mode="aspectFit"/>
+        </view>
+        <view class="device-info">
+          <text class="device-name">设备列表</text>
+        </view>
+      </view>
     </view>
   </view>
 </view>

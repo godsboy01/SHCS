@@ -1,0 +1,38 @@
+<navigation-bar 
+  title="添加设备" 
+  background="#4CAF50" 
+  color="#ffffff"
+  back="{{true}}"
+/>
+
+<view class="container">
+  <form bindsubmit="handleSubmit">
+    <view class="form-group">
+      <view class="form-item">
+        <text class="label">设备名称</text>
+        <input class="input" name="device_name" placeholder="请输入设备名称"/>
+      </view>
+
+      <view class="form-item">
+        <text class="label">设备类型</text>
+        <picker name="device_type" bindchange="handleTypeChange" value="{{typeIndex}}" range="{{typeList}}" range-key="text">
+          <view class="picker {{typeIndex === null ? 'placeholder' : ''}}">
+            {{typeIndex === null ? '请选择设备类型' : typeList[typeIndex].text}}
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-item">
+        <text class="label">设备位置</text>
+        <input class="input" name="location" placeholder="请输入设备位置"/>
+      </view>
+
+      <view class="form-item">
+        <text class="label">IP地址</text>
+        <input class="input" name="ip_address" placeholder="请输入设备IP地址"/>
+      </view>
+    </view>
+
+    <button class="submit-btn" form-type="submit">添加设备</button>
+  </form>
+</view> 

@@ -4,11 +4,38 @@
   "setting": {
     "compileHotReLoad": true,
     "skylineRenderEnable": false,
-    "urlCheck": false
+    "urlCheck": false,
+    "coverView": true,
+    "lazyloadPlaceholderEnable": false,
+    "preloadBackgroundData": false,
+    "autoAudits": false,
+    "useApiHook": true,
+    "useApiHostProcess": true,
+    "showShadowRootInWxmlPanel": true,
+    "useStaticServer": false,
+    "useLanDebug": false,
+    "showES6CompileOption": false,
+    "checkInvalidKey": true,
+    "ignoreDevUnusedFiles": true,
+    "bigPackageSizeSupport": false
   },
   "condition": {
     "miniprogram": {
       "list": [
+        {
+          "name": "pages/device-add/device-add",
+          "pathName": "pages/device-add/device-add",
+          "query": "",
+          "scene": null,
+          "launchMode": "default"
+        },
+        {
+          "name": "pages/device-manage/device-manage",
+          "pathName": "pages/device-manage/device-manage",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
         {
           "name": "pages/message-detail/message-datail",
           "pathName": "pages/message-detail/message-detail",
@@ -102,5 +129,6 @@
         }
       ]
     }
-  }
+  },
+  "libVersion": "3.7.7"
 }

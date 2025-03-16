@@ -1,0 +1,52 @@
+<navigation-bar 
+  title="设备详情" 
+  background="#4CAF50" 
+  color="#ffffff"
+  back="{{true}}"
+/>
+
+<view class="container">
+  <view class="device-header">
+    <view class="device-icon">
+      <image src="/assets/icon/{{device.device_type}}.png" mode="aspectFit"/>
+    </view>
+    <view class="device-status {{device.status === 'online' ? 'online' : ''}}">
+      <view class="status-dot"></view>
+      {{device.status === 'online' ? '在线' : '离线'}}
+    </view>
+  </view>
+
+  <form bindsubmit="handleSubmit">
+    <view class="form-group">
+      <view class="form-item">
+        <text class="label">设备名称</text>
+        <input class="input" name="device_name" value="{{device.device_name}}" placeholder="请输入设备名称"/>
+      </view>
+
+      <view class="form-item">
+        <text class="label">设备类型</text>
+        <view class="info-box">{{deviceTypes[device.device_type]}}</view>
+      </view>
+
+      <view class="form-item">
+        <text class="label">设备位置</text>
+        <input class="input" name="location" value="{{device.location}}" placeholder="请输入设备位置"/>
+      </view>
+
+      <view class="form-item">
+        <text class="label">IP地址</text>
+        <input class="input" name="ip_address" value="{{device.ip_address}}" placeholder="请输入设备IP地址"/>
+      </view>
+
+      <view class="form-item">
+        <text class="label">最后活跃</text>
+        <view class="info-box">{{device.last_active || '暂无记录'}}</view>
+      </view>
+    </view>
+
+    <view class="button-group">
+      <button class="submit-btn" form-type="submit">保存修改</button>
+      <button class="delete-btn" bindtap="handleDelete">删除设备</button>
+    </view>
+  </form>
+</view> 

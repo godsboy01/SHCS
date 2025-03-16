@@ -68,7 +68,7 @@ class VideoCamera(object):
         if self.video.isOpened():
             success, image = self.video.read()
             if success:
-                print("摄像头成功读取帧")
+                # print("摄像头成功读取帧")
                 ret, jpeg = cv2.imencode('.jpg', image)
                 return jpeg.tobytes(), 0  # 返回帧数据和警报级别
             else:

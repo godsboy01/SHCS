@@ -1,91 +1,155 @@
 // pages/home/home.js
+const api = require('../../utils/api');
+const weatherService = require('../../utils/weather');
+const app = getApp();
+
 Page({
   data: {
-    familyName: '张', // 家庭名称
-    temperature: '--',       // 当前温度
-    location: '加载中...',   // 当前位置
-    devices: [               // 设备列表
-      { id: 1, name: '客厅摄像头', icon: '../../assets/icon/camera01.png', type: 'camera' },
-      { id: 2, name: '卧室摄像头', icon: '../../assets/icon/camera02.png', type: 'camera' },
-      { id: 3, name: '体重计', icon: '../../assets/icon/weight.png', type: 'weight' },
-      { id: 4, name: '血压计', icon: '../../assets/icon/blood.png', type: 'bloodpressure' },
-    ],
+    cameras: [],
+    weightScales: [],
+    bloodPressures: [],
+    loading: false,
+    weather: {
+      temp: '--',
+      text: '未知',
+      location: '定位中...',
+      date: ''
+    },
+    defaultCity: '南京市'
   },
 
   onLoad() {
-    const user = wx.getStorageSync('user'); // 读取本地缓存
-    if (!user) {
-      wx.redirectTo({ url: '/pages/login/login' }); // 如果未登录，跳转到登录页面
-    }
-    // this.loadFamilyName(); // 加载家庭名称
-    this.loadWeather();    // 加载天气数据
+    this.loadDevices();
+    this.initWeather();
+    this.setCurrentDate();
   },
-  // 调用天气 API 获取温度
-  loadWeather() {
-    const apiKey = '3e7aea94f84345cf97a145138252702'; // 你的天气 API Key
-    const location = '南京、'; // 指定城市名称
-  
-    wx.request({
-      url: `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${location}`,
-      method: 'GET',
-      success: (res) => {
-        console.log('API 返回数据：', res); // 打印完整响应
-        if (res.statusCode === 200 && res.data && res.data.current) {
-          // 更新页面数据
+
+  onShow() {
+    this.loadDevices();
+  },
+
+  onPullDownRefresh() {
+    this.loadDevices();
+  },
+
+  async loadDevices() {
+    if (this.data.loading) return;
+    this.setData({ loading: true });
+
+    try {
+      const res = await api.device.getDevices();
+      const devices = res.devices || [];
+
+      this.setData({
+        cameras: devices.filter(d => d.device_type === 'camera'),
+        weightScales: devices.filter(d => d.device_type === 'weight_scale'),
+        bloodPressures: devices.filter(d => d.device_type === 'blood_pressure')
+      });
+    } catch (err) {
+      wx.showToast({
+        title: '加载失败',
+        icon: 'none'
+      });
+    } finally {
+      this.setData({ loading: false });
+      wx.stopPullDownRefresh();
+    }
+  },
+
+  async initWeather() {
+    wx.showLoading({
+      title: '获取位置中',
+      mask: true
+    });
+
+    try {
+      const locationInfo = await weatherService.getLocation();
+      
+      if (locationInfo) {
+        const city = locationInfo.city;
+        const weatherData = await weatherService.getWeather(city);
+        
+        if (weatherData) {
           this.setData({
-            temperature: res.data.current.temp_c, // 当前温度（摄氏度）
-            location: res.data.location.name,     // 当前城市名称
-            weatherDescription: res.data.current.condition.text, // 设置天气描述
-            weatherIcon: res.data.current.condition.icon.startsWith('//') ? 'https:' + res.data.current.condition.icon : res.data.current.condition.icon, // 设置天气图标URL
-          });
-        } else {
-          console.error('获取天气数据失败：', res);
-          wx.showToast({
-            title: '获取天气数据失败',
-            icon: 'none',
+            weather: {
+              ...this.data.weather,
+              temp: weatherData.temp,
+              text: weatherData.text,
+              location: `${city}`
+            }
           });
         }
-      },
-      fail: (err) => {
-        console.error('请求天气 API 失败：', err);
-        wx.showToast({
-          title: '网络请求失败',
-          icon: 'none',
+      } else {
+        const weatherData = await weatherService.getWeather(this.data.defaultCity);
+        this.setData({
+          weather: {
+            ...this.data.weather,
+            temp: weatherData.temp,
+            text: weatherData.text,
+            location: this.data.defaultCity
+          }
         });
-      },
+      }
+    } catch (err) {
+      console.error('初始化天气失败:', err);
+      wx.showToast({
+        title: '获取天气信息失败',
+        icon: 'none'
+      });
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  setCurrentDate() {
+    const date = new Date();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const weekDay = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
+    
+    this.setData({
+      'weather.date': `${month}月${day}日 ${weekDay}`
     });
   },
 
-
-  onDeviceTap(event) {
-    const device = event.currentTarget.dataset.item; // 获取点击的设备对象
-    const deviceId = device.id;
-    const deviceType = device.type;
-
-    switch (deviceType) {
+  navigateToDevice(e) {
+    const { id, type } = e.currentTarget.dataset;
+    
+    // 根据设备类型跳转到不同页面
+    switch(type) {
       case 'camera':
-        // 跳转到实时监控页面
         wx.navigateTo({
-          url: `/pages/realtime-monitor/realtime-monitor?id=${deviceId}`,
+          url: `/pages/realtime-monitor/realtime-monitor?id=${id}`
         });
         break;
-      case 'weight':
-        // 跳转到体重记录页面
+      case 'weight_scale':
         wx.navigateTo({
-          url: `/pages/weight-record/weight-record`,
+          url: `/pages/weight-record/weight-record?id=${id}`
         });
         break;
-      case 'bloodpressure':
-        // 跳转到血压记录页面
+      case 'blood_pressure':
         wx.navigateTo({
-          url: `/pages/bloodpressure-record/bloodpressure-record`,
+          url: `/pages/bloodpressure-record/bloodpressure-record?id=${id}`
         });
         break;
-      default:
-        wx.showToast({
-          title: '未知设备类型',
-          icon: 'none',
-        });
     }
   },
+
+  navigateToDeviceManage() {
+    wx.navigateTo({
+      url: '/pages/device-manage/device-manage'
+    });
+  },
+
+  async refreshWeather() {
+    await this.initWeather();
+  },
+
+  async onPullDownRefresh() {
+    await Promise.all([
+      this.loadDevices(),
+      this.refreshWeather()
+    ]);
+    wx.stopPullDownRefresh();
+  }
 });

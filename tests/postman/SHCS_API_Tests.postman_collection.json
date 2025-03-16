@@ -1,0 +1,299 @@
+{
+    "info": {
+        "name": "SHCS API Tests",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. 用户认证模块",
+            "item": [
+                {
+                    "name": "TC-B001: 用户注册",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"Test123!\",\n    \"email\": \"test@example.com\",\n    \"phone\": \"13800138000\",\n    \"role\": \"user\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/register",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "register"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"注册成功状态码为 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"响应格式正确\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.code).to.equal(200);",
+                                    "    pm.expect(jsonData.message).to.equal(\"注册成功\");",
+                                    "    pm.expect(jsonData.data).to.have.property('userId');",
+                                    "    pm.expect(jsonData.data).to.have.property('username');",
+                                    "    pm.expect(jsonData.data).to.have.property('role');",
+                                    "    // 保存用户ID供后续测试使用",
+                                    "    pm.environment.set(\"USER_ID\", jsonData.data.userId);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "TC-B002: 重复用户名注册",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"Test123!\",\n    \"email\": \"test2@example.com\",\n    \"phone\": \"13800138001\",\n    \"role\": \"user\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/register",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "register"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"重复注册返回400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"返回用户已存在信息\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message).to.include(\"用户名已存在\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "TC-B003: 用户登录",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"Test123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/login",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "login"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"登录成功状态码为 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"登录响应格式正确\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.code).to.equal(200);",
+                                    "    pm.expect(jsonData.message).to.equal(\"登录成功\");",
+                                    "    pm.expect(jsonData.data).to.have.property('token');",
+                                    "    pm.expect(jsonData.data).to.have.property('userInfo');",
+                                    "    pm.expect(jsonData.data.userInfo).to.have.property('userId');",
+                                    "    pm.expect(jsonData.data.userInfo).to.have.property('username');",
+                                    "    pm.expect(jsonData.data.userInfo).to.have.property('role');",
+                                    "    // 保存token供后续测试使用",
+                                    "    pm.environment.set(\"TOKEN\", jsonData.data.token);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "TC-B004: 错误密码登录",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"WrongPass123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/login",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "login"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"错误密码返回401\", function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"返回错误信息\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message).to.include(\"用户名或密码错误\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "2. 用户信息模块",
+            "item": [
+                {
+                    "name": "TC-B005: 获取用户信息",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{TOKEN}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{BASE_URL}}/user/info",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["user", "info"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"获取用户信息成功\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"用户信息完整\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.data).to.have.property('userId');",
+                                    "    pm.expect(jsonData.data).to.have.property('username');",
+                                    "    pm.expect(jsonData.data).to.have.property('email');",
+                                    "    pm.expect(jsonData.data).to.have.property('phone');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "TC-B006: 未授权访问",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{BASE_URL}}/user/info",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["user", "info"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"未授权访问返回401\", function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"返回未授权错误信息\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message).to.include(\"未授权\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "3. 密码安全测试",
+            "item": [
+                {
+                    "name": "TC-B007: 密码强度验证 - 长度不足",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"testuser2\",\n    \"password\": \"short\",\n    \"email\": \"test2@example.com\",\n    \"phone\": \"13800138002\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{BASE_URL}}/auth/register",
+                            "host": ["{{BASE_URL}}"],
+                            "path": ["auth", "register"]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"密码长度不足返回400\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"返回密码长度错误信息\", function () {",
+                                    "    const jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message).to.include(\"密码长度不足\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+} 

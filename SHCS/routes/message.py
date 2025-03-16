@@ -1,7 +1,7 @@
 # routes/message.py
 
 from flask import Blueprint, request, jsonify, url_for
-from models.models import db, FallDetectionRecord, Notification, HealthAlert, User
+from models.models import db, FallDetectionRecord, Notification,  User
 from datetime import datetime
 
 message_bp = Blueprint('message', __name__)

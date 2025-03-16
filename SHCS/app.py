@@ -18,6 +18,7 @@ def create_app():
     from routes.family import family_bp
     from routes.message import message_bp
     from routes.camera import camera_bp, get_camera_instance
+    from routes.device import device_bp
     # from routes.health import health_bp
 
     # 将摄像头实例注入到应用上下文中
@@ -30,6 +31,7 @@ def create_app():
     app.register_blueprint(family_bp, url_prefix='/api/family')
     app.register_blueprint(message_bp, url_prefix='/api/message')
     app.register_blueprint(camera_bp, url_prefix='/api/camera')
+    app.register_blueprint(device_bp, url_prefix='/api/device')
     # app.register_blueprint(health_bp, url_prefix='/api/health')
 
     return app

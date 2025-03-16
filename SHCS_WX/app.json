@@ -3,6 +3,8 @@
     "pages/home/home",
     "pages/login/login",
     "pages/device-manage/device-manage",
+    "pages/device-add/device-add",
+    "pages/device-detail/device-detail",
     "pages/realtime-monitor/realtime-monitor",
     "pages/notifications/notifications",
     "pages/profile/profile",

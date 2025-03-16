@@ -1,0 +1,10 @@
+{
+  "permission": {
+    "scope.userLocation": {
+      "desc": "您的位置信息将用于获取天气数据"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation"
+  ]
+} 

@@ -58,7 +58,41 @@ const api = {
   deleteMember: (userId) => request(`/family/delete_member/${userId}`, {
     method: 'DELETE',
     header: { 'content-type': 'application/json' }
-  })
+  }),
+  // 设备管理相关API
+  device: {
+    // 获取设备列表
+    getDevices: (params) => request('/device/devices', {
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      },
+      data: params
+    }),
+    // 添加设备
+    addDevice: (data) => request('/device/devices', {
+      method: 'POST',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      },
+      data
+    }),
+    // 更新设备
+    updateDevice: (deviceId, data) => request(`/device/devices/${deviceId}`, {
+      method: 'PUT',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      },
+      data
+    }),
+    // 删除设备
+    deleteDevice: (deviceId) => request(`/device/devices/${deviceId}`, {
+      method: 'DELETE',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      }
+    })
+  }
 };
 
-export default api;
+module.exports = api;  // 使用module.exports导出
