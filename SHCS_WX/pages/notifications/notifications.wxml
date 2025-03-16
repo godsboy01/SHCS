@@ -1,0 +1,46 @@
+<!-- pages/notifications/notifications.wxml -->
+<view class="page">
+  <navigation-bar title="通知中心" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
+    <view slot="right">
+      <button bindtap="goToSettings">设置</button>
+    </view>
+  </navigation-bar>
+
+  <!-- 消息分类筛选 -->
+  <view class="filter-bar">
+    <view class="filter-item {{activeTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">
+      全部
+    </view>
+    <view class="filter-item {{activeTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">
+      跌倒提醒
+    </view>
+    <view class="filter-item {{activeTab === 2 ? 'active' : ''}}" bindtap="switchTab" data-index="2">
+      健康提醒
+    </view>
+  </view>
+
+  <!-- 消息列表 --><scroll-view class="message-list" scroll-y>
+  <block wx:for="{{messages}}" wx:key="message_id">
+    <view class="message-item {{item.is_read ? '' : 'unread'}}" bindtap="viewDetail" data-id="{{item.message_id}}">
+      <view class="icon-wrapper">
+        <image src="{{item.type === 'fall' ? '../../assets/icon/health.png' : '../../assets/icon/fall.png'}}" class="type-icon" />
+        <view wx:if="{{!item.is_read}}" class="unread-badge"></view>
+      </view>
+
+      <view class="content">
+        <view class="header">
+          <text class="title">{{item.type === 'fall' ? '健康警报' : '跌倒警报'}}</text>
+          <text class="time">{{formatTime(item.timestamp)}}</text>
+        </view>
+        <text class="summary">{{item.message}}</text>
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{messages.length === 0}}" class="empty">
+    <image src="/images/icon-empty.png" class="empty-icon" />
+    <text class="empty-text">暂无消息</text>
+  </view>
+</scroll-view>
+
+</view>

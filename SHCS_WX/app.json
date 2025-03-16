@@ -1,0 +1,71 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/login/login",
+    "pages/device-manage/device-manage",
+    "pages/realtime-monitor/realtime-monitor",
+    "pages/notifications/notifications",
+    "pages/profile/profile",
+    "pages/register/register",
+    "pages/edit-profile/edit-profile",
+    "pages/familyMembers/familyMembers",
+    "pages/addMember/addMember",
+    "pages/weight-record/weight-record",
+    "pages/bloodpressure-record/bloodpressure-record",
+    "pages/test/test",
+    "pages/message-list/message-list",
+    "pages/message-detail/message-detail"
+  ],
+  "window": {
+    "navigationBarTitleText": "居家护理系统",
+    "navigationBarTextStyle": "black",
+    "navigationStyle": "custom",
+    "backgroundColor": "#efefef",
+    "enablePullDownRefresh": true,
+    "navigationBarBackgroundColor": "#000000"
+    
+  },
+
+
+  "tabBar": {
+    "list": [{
+      "pagePath": "pages/home/home",
+      "text": "首页",
+      "iconPath": "./assets/tabbar/home.png",
+      "selectedIconPath": "./assets/tabbar/home_active.png"
+    },
+    {
+      "pagePath": "pages/notifications/notifications",
+      "text": "通知中心",
+      "iconPath": "./assets/tabbar/notation.png",
+      "selectedIconPath": "./assets/tabbar/notation_active.png"
+    },
+    {
+      "pagePath": "pages/profile/profile",
+      "text": "个人主页",
+      "iconPath": "./assets/tabbar/people.png",
+      "selectedIconPath": "./assets/tabbar/people_active.png"
+    }]
+  },
+
+  "rendererOptions": {
+    "skyline": {
+      "defaultDisplayBlock": true,
+      "defaultContentBox": true,
+      "tagNameStyleIsolation": "legacy",
+      "disableABTest": true,
+      "sdkVersionBegin": "3.0.0",
+      "sdkVersionEnd": "15.255.255"
+    }
+  },
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置信息将用于小程序位置接口的效果展示"
+    }
+  }
+}
+
+

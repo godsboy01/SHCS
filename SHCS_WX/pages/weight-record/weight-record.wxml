@@ -1,0 +1,60 @@
+<!-- pages/weight-record/weight-record.wxml -->
+<view class="page">
+  <!-- 导航栏 -->
+  <navigation-bar title="体重记录" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
+    <view slot="right">
+      <button bindtap="showSettingModal">设置</button>
+    </view>
+  </navigation-bar>
+
+  <!-- 主内容 -->
+  <scroll-view class="content">
+    <!-- 表单输入 -->
+    <view class="form-section">
+      <view class="form-item">
+        <text class="label">身高（cm）</text>
+        <input class="input" type="number" placeholder="请输入身高" bindinput="onHeightInput" value="{{formData.height}}" />
+      </view>
+      <view class="form-item">
+        <text class="label">体重（kg）</text>
+        <input class="input" type="number" placeholder="请输入体重" bindinput="onWeightInput" value="{{formData.weight}}" />
+      </view>
+      <button class="submit-btn" bindtap="submitRecord" disabled="{{!formData.height || !formData.weight}}">
+        记录
+      </button>
+    </view>
+
+    <!-- 当前BMI提示 -->
+    <view class="bmi-status">
+      <text class="bmi-value">{{currentBMI}}</text>
+      <text class="status-text {{bmiClass}}">{{bmiMessage}}</text>
+    </view>
+
+    <!-- 时间段选择 -->
+    <view class="time-range">
+      <text class="label">选择时间段：</text>
+      <picker mode="selector" range="{{timeOptions}}" range-key="name" bindchange="onTimeRangeChange">
+        <view class="picker">
+          {{selectedTimeOption.name || '请选择时间段'}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="chart-container">
+      <ec-canvas id="mychart-dom-bar" canvas-id="mychart-bar" ec="{{ ec }}"></ec-canvas>
+      <view wx:if="{{chartData.length === 0}}">暂无数据</view>
+    </view>
+  </scroll-view>
+
+  <!-- 弹窗触发按钮 -->
+  <button bindtap="showSettingModal">显示设置</button>
+
+  <!-- 原生弹窗组件（注意组件名称） -->
+  <wx:modal title="设置" show="{{showSetting}}" confirm-text="保存" bindconfirm="hideSettingModal" bindcancel="hideSettingModal">
+    <!-- 弹窗内容 -->
+    <view slot="content">
+      <!-- 自定义设置内容 -->
+      <text>这里是设置内容</text>
+    </view>
+  </wx:modal>
+</view>

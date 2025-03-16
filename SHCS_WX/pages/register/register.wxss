@@ -1,0 +1,64 @@
+.page {
+  /* padding-top: rpx; 为导航栏留出空间 */
+  background-color: #ededed;
+}
+.v1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.v2 {
+  width: 80%;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.dltext {
+  font-size: 40rpx;
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.usernameCs, .phoneCs, .passwordCs, .codeCs {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.us, .ph, .ps, .cs {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 10px;
+}
+
+input {
+  flex: 1;
+  border-bottom: 1px solid #ccc;
+  padding: 5px 0;
+}
+
+.getCode {
+  color: #1aad19;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.getCode.disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.denglu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.btn-dl {
+  width: 100%;
+  background-color: #1aad19;
+  color: white;
+}

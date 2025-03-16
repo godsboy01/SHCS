@@ -1,0 +1,55 @@
+.weui-navigation-bar {
+  width: 100%;
+  height: 100rpx;
+  background-color: #ffffff;
+  border-bottom: 1rpx solid #e0e0e0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+.weui-navigation-bar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20rpx;
+  height: 100%;
+}
+
+.weui-navigation-bar__left {
+  display: flex;
+  align-items: center; /* 垂直居中 */
+  justify-content: flex-start; /* 靠左对齐 */
+  height: 100%;
+}
+
+.weui-navigation-bar__buttons {
+  display: flex;
+  align-items: center; /* 垂直居中 */
+}
+
+.weui-navigation-bar__btn_goback_wrapper {
+  display: flex;
+  align-items: center; /* 垂直居中 */
+  justify-content: center; /* 水平居中 */
+  padding: 0 20rpx; /* 适当的内边距 */
+}
+
+.weui-navigation-bar__button {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.weui-navigation-bar__center {
+  flex: 1;
+  text-align: center;
+  font-size: 32rpx;
+  color: #000000;
+}
+
+.weui-navigation-bar__right {
+  display: flex;
+  align-items: center;
+}

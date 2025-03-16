@@ -1,0 +1,106 @@
+{
+  "description": "项目私有配置文件。此文件中的内容将覆盖 project.config.json 中的相同字段。项目的改动优先同步到此文件中。详见文档：https://developers.weixin.qq.com/miniprogram/dev/devtools/projectconfig.html",
+  "projectname": "SHCS_WX",
+  "setting": {
+    "compileHotReLoad": true,
+    "skylineRenderEnable": false,
+    "urlCheck": false
+  },
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "pages/message-detail/message-datail",
+          "pathName": "pages/message-detail/message-detail",
+          "query": "record_id=1",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/notifications/notifications",
+          "pathName": "pages/notifications/notifications",
+          "query": "userid=1",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/test/test",
+          "pathName": "pages/test/test",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/weight-record/weight-record",
+          "pathName": "pages/weight-record/weight-record",
+          "query": "{     \"message\": \"登录成功\",     \"user\": {         \"role\": \"admin\",         \"userid\": 1,         \"username\": \"zwd\"     } }",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/addMember/addMember",
+          "pathName": "pages/addMember/addMember",
+          "query": "familyId=1",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/familyMembers/familyMembers",
+          "pathName": "pages/familyMembers/familyMembers",
+          "query": "familyId=1",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/edit-profile/edit-profile",
+          "pathName": "pages/edit-profile/edit-profile",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/profile/profile",
+          "pathName": "pages/profile/profile",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/home/home",
+          "pathName": "pages/home/home",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/realtime-monitor/realtime-monitor",
+          "pathName": "pages/realtime-monitor/realtime-monitor",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/register/register",
+          "pathName": "pages/register/register",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/login/login",
+          "pathName": "pages/login/login",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/home/home",
+          "pathName": "pages/home/home",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        }
+      ]
+    }
+  }
+}

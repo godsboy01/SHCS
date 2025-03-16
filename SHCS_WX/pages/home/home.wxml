@@ -1,0 +1,36 @@
+<!-- pages/home/home.wxml -->
+<view class="page">
+
+  <!-- pages/home/home.wxml -->
+  <navigation-bar title="首页" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
+    <view slot="right">
+      <button>设置</button>
+    </view>
+  </navigation-bar>
+  <view class="container">
+    <!-- 顶部导航栏 -->
+    <view class="navbar">
+      <text class="family-name">{{familyName}}的家</text>
+    </view>
+
+    <!-- 温度模块 -->
+    <view class="temperature">
+      <text class="temperature-text">{{temperature}}°C</text>
+      <text class="location">{{location}}</text>
+      <view class="weather-icon">
+        <image class="icon" src="{{weatherIcon}}"></image> <!-- 新增天气图标 -->
+      </view>
+      <text class="weather-description">{{weatherDescription}}</text> <!-- 新增天气描述 -->
+    </view>
+
+    <!-- 设备模块 -->
+    <view class="device-grid">
+      <block wx:for="{{devices}}" wx:key="id">
+        <view class="device-item" bindtap="onDeviceTap" data-item="{{item}}">
+          <image class="device-icon" src="{{item.icon}}"></image>
+          <text class="device-name">{{item.name}}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+</view>

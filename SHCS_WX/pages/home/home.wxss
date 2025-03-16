@@ -1,0 +1,89 @@
+/* pages/home/home.wxss */
+.page {
+  padding-top: 100rpx;
+  background-color: #ffffff;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 20rpx;
+}
+
+/* 顶部导航栏 */
+.navbar {
+  height: 180rpx;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e7f2f5af;
+  border-radius: 10rpx;
+  margin-bottom: 20rpx;
+}
+
+.family-name {
+  font-size: 48rpx;
+  font-weight: bold;
+}
+/* 温度模块样式 */
+.temperature {
+  width: 50%; /* 占满整个容器的宽度 */
+  padding: 20rpx; /* 增加内边距 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #e0f7fa;
+  border-radius: 20rpx;
+  margin-bottom: 20rpx;
+}
+.temperature-text {
+  font-size: 64rpx; /* 增大字体大小 */
+  font-weight: bold;
+  margin-bottom: 10rpx;
+}
+.weather-icon {
+  margin-bottom: 10rpx;
+}
+.icon {
+  width: 64rpx; /* 设置图标大小 */
+  height: 64rpx;
+}
+
+.location {
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 设备模块 */
+.device-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 两列布局 */
+  gap: 20rpx;
+  min-height: 200rpx; /* 设置最小高度 */
+  max-height: 500rpx; /* 设置最大高度 */
+  overflow-y: auto; /* 超出部分显示滚动条 */
+}
+.device-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #e0f7fa;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  padding: 20rpx;
+}
+.device-icon {
+  width: 80rpx;
+  height: 80rpx;
+  margin-bottom: 10rpx;
+}
+
+.device-name {
+  font-size: 28rpx;
+  color: #333;
+}

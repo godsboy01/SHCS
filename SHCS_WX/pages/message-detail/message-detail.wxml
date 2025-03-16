@@ -1,0 +1,52 @@
+<view class="page">
+  <navigation-bar title="详细信息" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
+    <view slot="right">
+      <button bindtap="goToSettings">设置</button>
+    </view>
+  </navigation-bar>
+
+  <view class="container">
+    <view class="info-item">
+      <view class="info-label">记录 ID</view>
+      <view class="info-value">{{fallDetectionRecord.record_id}}</view>
+    </view>
+
+    <view class="info-item">
+      <view class="info-label">用户 ID</view>
+      <view class="info-value">{{fallDetectionRecord.user_id}}</view>
+    </view>
+
+    <view class="info-item">
+      <view class="info-label">设备 ID</view>
+      <view class="info-value">{{fallDetectionRecord.device_id}}</view>
+    </view>
+
+    <view class="info-item">
+      <view class="info-label">检测类型</view>
+      <view class="info-value">{{fallDetectionRecord.detection_type}}</view>
+    </view>
+
+    <view class="info-item">
+      <view class="info-label">置信度</view>
+      <view class="info-value">{{fallDetectionRecord.confidence}}%</view>
+    </view>
+
+    <view class="info-item">
+      <view class="info-label">状态</view>
+      <view class="info-value">{{fallDetectionRecord.status}}</view>
+    </view>
+
+    <view class="snapshot-list">
+      <block wx:if="{{fallDetectionRecord.snapshots && fallDetectionRecord.snapshots.length}}">
+        <block wx:for="{{fallDetectionRecord.snapshots}}" wx:key="*this">
+          <view class="snapshot-item">
+            <image src="{{item}}" mode="aspectFill"></image>
+          </view>
+        </block>
+      </block>
+      <block wx:else>
+        <view class="empty-tip">暂无截图</view>
+      </block>
+    </view>
+  </view>
+</view>

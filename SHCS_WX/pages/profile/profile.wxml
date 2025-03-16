@@ -1,0 +1,72 @@
+<!-- pages/profile/profile.wxml -->
+<view class="page">
+  <navigation-bar title="个人信息" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
+    <view slot="right">
+      <button bindtap="onSettings">设置</button>
+    </view>
+  </navigation-bar>
+
+  <view class="container">
+    <view class="profile">
+      <!-- 个人头像 -->
+      <view class="avatar-section">
+        <block wx:if="{{userInfo && userInfo.user_id}}">
+          <image class="avatar" src="{{'http://127.0.0.1:5000/api/auth/get_avatar/' + userInfo.user_id}}" binderror="onImageError"></image>
+        </block>
+        <block wx:else>
+          <image class="avatar" src="../../assets/tabbar/people.png" binderror="onImageError"></image>
+        </block>
+      </view>
+
+      <!-- 用户名称 -->
+      <view class="info-item">
+        <text class="label">姓名：</text>
+        <text class="value">{{userInfo.username || '未设置'}}</text>
+      </view>
+
+      <!-- 角色 -->
+      <view class="info-item">
+        <text class="label">角色：</text>
+        <text class="value">{{userInfo.role || '未设置'}}</text>
+      </view>
+
+      <!-- 所属家庭 -->
+      <view class="info-item" bindtap="navigateToFamilyManagement">
+        <text class="label">所属家庭：</text>
+        <text class="value">{{userInfo.family_id || '未绑定'}}</text>
+        <view class="arrow"></view>
+      </view>
+
+      <!-- 家庭地址 -->
+      <view class="info-item">
+        <text class="label">家庭地址：</text>
+        <text class="value">{{userInfo.address || '未设置'}}</text>
+      </view>
+
+      <!-- 修改用户信息 -->
+      <view class="info-item" bindtap="navigateToEditProfile">
+        <text class="label">修改用户信息</text>
+        <view class="arrow"></view>
+      </view>
+
+      <!-- 家庭成员信息 -->
+      <view class="family-members">
+        <text class="section-title">家庭成员</text>
+        <block wx:for="{{familyMembers}}" wx:key="index">
+          <view class="member-box" bindtap="navigateToMemberInfo" data-member-id="{{item.member_id}}">
+            <text class="member-name">{{item.name}}</text>
+            <text class="member-role">{{item.role}}</text>
+          </view>
+        </block>
+      </view>
+
+      <!-- 家庭成员头像 -->
+      <view class="family-avatars">
+        <text class="section-title"></text>
+        <block wx:for="{{familyMembers}}" wx:key="index">
+          <image class="small-avatar" src="{{item.avatar_url || '../../assets/tabbar/people.png'}}" binderror="onImageError"></image>
+        </block>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,49 @@
+<!--pages/familyMembers/familyMembers.wxml-->
+<text>pages/familyMembers/familyMembers.wxml</text>
+
+<view class="page">
+  <navigation-bar title="家庭信息管理" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
+    <view slot="right">
+      <button>设置</button>
+    </view>
+  </navigation-bar>
+
+  <view class="container">
+    <!-- 家庭名称 -->
+    <view class="family-header">
+      <text class="family-name">{{familyInfo.family_name}}</text>
+    </view>
+
+    <!-- 家庭成员总数 -->
+    <view class="member-count">
+      <text>家庭成员总数：{{familyInfo.members.length}}</text>
+    </view>
+
+    <!-- 家庭成员列表 -->
+    <scroll-view scroll-y class="member-list">
+      <block wx:for="{{familyInfo.members}}" wx:key="user_id">
+        <view class="member-item" bindtap="showUserInfo" data-user-id="{{item.user_id}}">
+          <image src="{{item.avatar_url}}" class="avatar"></image>
+          <view class="info">
+            <text>{{item.name}}</text>
+            <text>角色: {{item.role}}</text>
+          </view>
+        </view>
+      </block>
+    </scroll-view>
+
+    <!-- 添加家庭成员按钮 -->
+    <button class="add-member-btn" bindtap="addMember">添加家庭成员</button>
+
+    <!-- 家庭其他信息 -->
+    <view class="other-info">
+      <view class="info-item">
+        <text>位置: {{familyInfo.location || '未设置'}}</text>
+      </view>
+      <!-- 如果有设备数量字段，可以在这里显示 -->
+      <!-- <view class="info-item">
+      <text>设备数量: {{familyInfo.device_count || 0}}</text>
+    </view> -->
+    </view>
+  </view>
+</view>

@@ -1,0 +1,97 @@
+/* pages/detail/detail.wxss */
+
+.page {
+  background-color: #f8f8f8;
+  min-height: 100vh;
+}
+
+/* 导航栏右侧按钮样式 */
+navigation-bar button {
+  font-size: 28rpx;
+  color: #333;
+  background: none;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+}
+
+/* 主要内容容器 */
+.container {
+  padding: 20rpx 30rpx;
+  background-color: #fff;
+}
+
+/* 信息项通用样式 */
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+/* 信息标签样式 */
+.info-label {
+  font-size: 28rpx;
+  color: #666;
+  width: 180rpx;
+  flex-shrink: 0;
+}
+
+/* 信息值样式 */
+.info-value {
+  font-size: 30rpx;
+  color: #333;
+  text-align: right;
+  flex: 1;
+  margin-left: 40rpx;
+  word-break: break-all;
+}
+
+/* 截图容器 */
+.snapshot-container {
+  margin-top: 40rpx;
+}
+
+.snapshot-container .info-label {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+}
+
+/* 截图列表 */
+.snapshot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 30rpx;
+}
+/* 图片容器添加轮廓 */
+.snapshot-item {
+  border: 2rpx solid red; /* 临时调试边框 */
+  position: relative;
+}
+
+/* 显示加载状态 */
+.image-loading::after {
+  content: "加载中...";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+}
+
+/* 错误提示 */
+.image-error::after {
+  content: "图片加载失败";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ff4444;
+}

@@ -1,0 +1,45 @@
+<view class="page">
+  <navigation-bar title="家庭监控" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
+    <view slot="right">
+      <button>设置</button>
+    </view>
+  </navigation-bar>
+  <!-- 实时监控 -->
+  <view class="container">
+    <!-- 顶部导航栏 -->
+    <view class="navbar">
+      <view class="page-title">{{familyName}}家的实时监控</view>
+    </view>
+    <view class="status-badge {{isPlaying ? 'active' : ''}}">
+      {{isPlaying ? '监控中' : '已暂停'}}
+    </view>
+    <view class="info-panel">
+      <view class="info-item">
+        <text class="info-label">家庭：</text>
+        <text class="info-value">幸福家园</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">位置：</text>
+        <text class="info-value">客厅摄像头</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">时间：</text>
+        <text class="info-value">{{currentTime}}</text>
+      </view>
+    </view>
+
+    <view class="video-container {{isPlaying ? 'playing' : ''}}">
+      <image class="video-frame" src="{{videoSrc}}" mode="aspectFit" bindload="onImageLoad" style="{{isPlaying ? '' : 'filter: grayscale(100%);'}}" />
+      <view class="loading-overlay" wx:if="{{isLoading}}">
+        <view class="loading-spinner"></view>
+        <text>加载中...</text>
+      </view>
+      <view class="control-panel">
+        <view class="control-button" bindtap="togglePlay">
+          <text class="{{isPlaying ? 'pause-icon' : 'play-icon'}}"></text>
+          <text>{{isPlaying ? '暂停' : '播放'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

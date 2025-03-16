@@ -1,0 +1,66 @@
+<view class="page">
+  <!-- 导航栏 -->
+  <navigation-bar title="编辑个人信息" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
+    <view slot="right">
+      <button>设置</button>
+    </view>
+  </navigation-bar>
+
+  <!-- 编辑区域 -->
+  <view class="edit-profile">
+    <!-- 个人头像 -->
+    <view class="avatar-section">
+      <block wx:if="{{userInfo && userInfo.user_id}}">
+        <image class="avatar" src="{{'http://127.0.0.1:5000/api/auth/get_avatar/' + userInfo.user_id}}" binderror="onImageError"></image>
+      </block>
+      <block wx:else>
+        <image class="avatar" src="../../assets/tabbar/people.png" binderror="onImageError"></image>
+      </block>
+      <button class="change-avatar-button" bindtap="changeAvatar">更换头像</button>
+    </view>
+
+    <!-- 用户名称 -->
+    <view class="form-item">
+      <text class="label">姓名：</text>
+      <input class="input" value="{{userInfo.name}}" bindinput="onNameInput" />
+    </view>
+
+    <!-- 电话 -->
+    <view class="form-item">
+      <text class="label">电话：</text>
+      <input class="input" value="{{userInfo.phone}}" bindinput="onPhoneInput" />
+    </view>
+
+    <!-- 邮箱 -->
+    <view class="form-item">
+      <text class="label">邮箱：</text>
+      <input class="input" value="{{userInfo.email}}" bindinput="onEmailInput" />
+    </view>
+
+    <!-- 地址 -->
+    <view class="form-item">
+      <text class="label">地址：</text>
+      <input class="input" value="{{userInfo.address}}" bindinput="onAddressInput" />
+    </view>
+
+
+    <!-- 角色选择 -->
+    <view class="form-item">
+      <text class="label">角色：</text>
+      <picker mode="selector" range="{{roles}}" value="{{roles.indexOf(userInfo.role) !== -1 ? roles.indexOf(userInfo.role) : 0}}" bindchange="onRoleChange">
+        <view class="picker">
+          当前选择：{{userInfo.role}}
+        </view>
+      </picker>
+    </view>
+
+    <!-- 家庭编号（只读） -->
+    <view class="form-item">
+      <text class="label">家庭编号：</text>
+      <input class="input" value="{{userInfo.family_id}}" disabled />
+    </view>
+
+    <!-- 提交按钮 -->
+    <button class="submit-button" bindtap="submit">保存修改</button>
+  </view>
+</view>
