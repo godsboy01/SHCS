@@ -1,12 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
-from flask_socketio import SocketIO
-from flask_sqlalchemy import SQLAlchemy
+from extensions import db, socketio  # 从extensions导入db和socketio
 from config import Config
-
-# 初始化数据库
-db = SQLAlchemy()
-socketio = SocketIO(async_mode='eventlet')  # 先初始化 SocketIO 但不传入 app
 
 def create_app():
     app = Flask(__name__)
@@ -23,7 +18,7 @@ def create_app():
     from routes.family import family_bp
     from routes.message import message_bp
     from routes.camera import camera_bp, get_camera_instance
-    from routes.health import health_bp
+    # from routes.health import health_bp
 
     # 将摄像头实例注入到应用上下文中
     app.camera = get_camera_instance()
@@ -35,7 +30,7 @@ def create_app():
     app.register_blueprint(family_bp, url_prefix='/api/family')
     app.register_blueprint(message_bp, url_prefix='/api/message')
     app.register_blueprint(camera_bp, url_prefix='/api/camera')
-    app.register_blueprint(health_bp, url_prefix='/api/health')
+    # app.register_blueprint(health_bp, url_prefix='/api/health')
 
     return app
 

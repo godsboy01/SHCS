@@ -1,10 +1,13 @@
 import re
 import jwt
-from datetime import datetime, timedelta
+import datetime  # 直接导入datetime模块
 from functools import wraps
 from flask import request, jsonify, current_app
 import redis
 from time import time
+import bcrypt
+from typing import Dict, Optional
+from config import Config
 
 class SecurityUtils:
     def __init__(self):
@@ -34,16 +37,19 @@ class SecurityUtils:
             
         return True, "密码强度符合要求"
 
-    def generate_token(self, user_id, role):
+    def generate_token(self, user_id, role=None):
         """
         生成JWT token
         """
         payload = {
             'user_id': user_id,
             'role': role,
-            'exp': datetime.utcnow() + timedelta(days=1)  # 1天过期
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1)  # 1天过期
         }
-        return jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
+        token = jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
+        if isinstance(token, bytes):
+            return token.decode('utf-8')
+        return token
 
     def verify_token(self, token):
         """
@@ -112,4 +118,63 @@ def require_role(roles):
 
             return f(*args, **kwargs)
         return decorated
-    return decorator 
+    return decorator
+
+def hash_password(password):
+    """对密码进行哈希"""
+    if isinstance(password, str):
+        password = password.encode('utf-8')
+    return bcrypt.hashpw(password, bcrypt.gensalt())
+
+def verify_password(password, hashed_password):
+    """验证密码"""
+    if isinstance(password, str):
+        password = password.encode('utf-8')
+    if isinstance(hashed_password, str):
+        hashed_password = hashed_password.encode('utf-8')
+    try:
+        return bcrypt.checkpw(password, hashed_password)
+    except Exception as e:
+        print(f"Password verification error: {str(e)}")
+        return False
+
+def generate_token(user_id, role=None):
+    """生成JWT token"""
+    payload = {
+        'user_id': user_id,
+        'role': role
+    }
+    return jwt.encode(payload, Config.SECRET_KEY, algorithm='HS256')
+
+def verify_token(token: str, secret_key: str) -> Optional[Dict]:
+    """
+    验证JWT令牌
+    """
+    try:
+        return jwt.decode(token, secret_key, algorithms=['HS256'])
+    except jwt.InvalidTokenError:
+        return None
+
+# 添加一个简单的内存型速率限制器
+_rate_limits = {}
+
+def rate_limit(key, limit=5, period=300):
+    """
+    简单的速率限制实现
+    :param key: 限制的键（比如IP地址）
+    :param limit: 允许的最大请求次数
+    :param period: 时间周期（秒）
+    :return: 是否允许请求
+    """
+    current = time.time()
+    if key not in _rate_limits:
+        _rate_limits[key] = []
+    
+    # 清理过期的记录
+    _rate_limits[key] = [t for t in _rate_limits[key] if t > current - period]
+    
+    if len(_rate_limits[key]) >= limit:
+        return False
+    
+    _rate_limits[key].append(current)
+    return True 

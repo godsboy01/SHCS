@@ -7,7 +7,8 @@ import re
 from flask import Blueprint, request, jsonify, current_app, send_from_directory, abort
 from werkzeug.utils import secure_filename
 
-from models.models import User, db, Family
+from models.models import User, db, Family, CareRelationship
+from utils import security
 from utils.password import hash_password
 from utils.password import check_password
 from utils.upload import handle_upload  # 导入上传工具
@@ -112,10 +113,14 @@ def register():
         if field not in data:
             return jsonify({'message': f'缺少必要字段: {field}'}), 400
     
+    # 验证角色
+    if data['role'] not in ['admin', 'guardian', 'elderly']:
+        return jsonify({'message': '无效的用户角色'}), 400
+    
     # 验证密码强度
-    is_valid, msg = security.validate_password_strength(data['password'])
-    if not is_valid:
-        return jsonify({'message': msg}), 400
+    password_valid, password_message = SecurityUtils.validate_password_strength(data['password'])
+    if not password_valid:
+        return jsonify({'message': password_message}), 400
     
     # 验证用户名是否已存在
     if User.query.filter_by(username=data['username']).first():
@@ -125,20 +130,30 @@ def register():
     if not re.match(r'^1[3-9]\d{9}$', data['phone']):
         return jsonify({'message': '无效的手机号码'}), 400
     
-    # 创建新用户
     try:
+        # 创建新用户
         new_user = User(
             username=data['username'],
-            password=hash_password(data['password']),
+            password=security.hash_password(data['password']).decode('utf-8'),  # 存储为字符串
             role=data['role'],
             name=data['name'],
             phone=data['phone'],
-            email=data.get('email'),
-            address=data.get('address'),
-            family_id=data.get('family_id')
+            email=data.get('email')
         )
+        
         db.session.add(new_user)
         db.session.commit()
+        
+        # 如果是被监护人，且指定了监护人ID，创建监护关系
+        guardian_id = data.get('guardian_id')
+        if data['role'] == 'elderly' and guardian_id:
+            guardian = User.query.get(guardian_id)
+            if guardian and guardian.role == 'guardian':
+                care_relationship = CareRelationship(
+                    guardian_id=guardian_id,
+                    elderly_id=new_user.user_id
+                )
+                db.session.add(care_relationship)
         
         # 生成token
         token = security.generate_token(new_user.user_id, new_user.role)
@@ -161,35 +176,29 @@ def register():
 # 登录功能 (routes/auth.py)
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    # 检查请求频率限制
-    if not security.rate_limit(f"login:{request.remote_addr}", limit=5, period=300):
-        return jsonify({'message': '登录尝试次数过多，请稍后再试'}), 429
-        
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    
-    if not username or not password:
-        return jsonify({'message': '用户名和密码不能为空'}), 400
-        
+
+    # 查找用户
     user = User.query.filter_by(username=username).first()
-    if not user or not check_password(password, user.password):
-        return jsonify({'message': '用户名或密码错误'}), 401
-        
-    # 生成token
-    token = security.generate_token(user.user_id, user.role)
     
-    return jsonify({
-        'message': '登录成功',
-        'token': token,
-        'user': {
-            'user_id': user.user_id,
-            'username': user.username,
-            'role': user.role,
-            'name': user.name,
-            'avatar': user.avatar
-        }
-    }), 200
+    # 验证用户和密码
+    if user and security.verify_password(password, user.password):
+        # 生成token，添加role信息
+        token = security.generate_token(user.user_id, user.role)  # 添加role参数
+        return jsonify({
+            'message': '登录成功',
+            'token': token,
+            'user': {
+                'user_id': user.user_id,
+                'username': user.username,
+                'name': user.name,
+                'role': user.role
+            }
+        }), 200
+    
+    return jsonify({'message': '用户名或密码错误'}), 401
 
 @auth_bp.route('/profile', methods=['GET'])
 @require_auth
@@ -202,6 +211,23 @@ def get_profile():
     user = User.query.get(payload['user_id'])
     if not user:
         return jsonify({'message': '用户不存在'}), 404
+    
+    # 获取监护关系信息
+    care_info = None
+    if user.role == 'guardian':
+        elderly_list = [rel.elderly_person for rel in user.as_guardian]
+        care_info = [{
+            'elderly_id': elderly.user_id,
+            'name': elderly.name,
+            'phone': elderly.phone
+        } for elderly in elderly_list]
+    elif user.role == 'elderly':
+        guardian_list = [rel.guardian for rel in user.as_elderly]
+        care_info = [{
+            'guardian_id': guardian.user_id,
+            'name': guardian.name,
+            'phone': guardian.phone
+        } for guardian in guardian_list]
         
     return jsonify({
         'user_id': user.user_id,
@@ -210,95 +236,77 @@ def get_profile():
         'name': user.name,
         'phone': user.phone,
         'email': user.email,
-        'address': user.address,
         'avatar': user.avatar,
-        'family_id': user.family_id
+        'care_info': care_info
     }), 200
 
 @auth_bp.route('/update_user/<int:user_id>', methods=['PUT'])
+@require_auth
 def update_user(user_id):
     data = request.get_json()
-    print("Received data:", data)  # 打印接收到的数据
     user = User.query.get(user_id)
 
     if not user:
         return jsonify({'message': '用户不存在'}), 404
-
-    current_family_id = data.get('current_family_id')
-    new_family_id = data.get('family_id')
 
     try:
-        if current_family_id is not None:
-            current_family_id = int(current_family_id)  # 确保是整数
-        new_family_id = int(new_family_id)  # 确保是整数
-    except (ValueError, TypeError) as e:
-        return jsonify({'message': '请求参数错误: family_id 或 current_family_id 不是有效的整数'}), 400
+        # 更新基本信息
+        if 'name' in data:
+            user.name = data['name']
+        if 'phone' in data:
+            if not re.match(r'^1[3-9]\d{9}$', data['phone']):
+                return jsonify({'message': '无效的手机号码'}), 400
+            user.phone = data['phone']
+        if 'email' in data:
+            user.email = data['email']
+        if 'password' in data:
+            if not SecurityUtils.validate_password_strength(data['password']):
+                return jsonify({'message': '密码强度不足'}), 400
+            user.password = security.hash_password(data['password']).decode('utf-8')
 
-    print("Current family ID:", current_family_id)
-    print("New family ID:", new_family_id)
+        # 更新监护关系
+        if 'guardian_id' in data and user.role == 'elderly':
+            guardian_id = data['guardian_id']
+            # 删除现有的监护关系
+            CareRelationship.query.filter_by(elderly_id=user.user_id).delete()
+            # 添加新的监护关系
+            if guardian_id:
+                guardian = User.query.get(guardian_id)
+                if guardian and guardian.role == 'guardian':
+                    care_relationship = CareRelationship(
+                        guardian_id=guardian_id,
+                        elderly_id=user.user_id
+                    )
+                    db.session.add(care_relationship)
 
-    # 确保 user.family_id 也是整数类型
-    user_family_id = int(user.family_id)
+        db.session.commit()
+        return jsonify({'message': '用户信息更新成功'}), 200
 
-    if current_family_id is not None and user_family_id == current_family_id:
-        return jsonify({'message': '用户已经是当前家庭的成员'}), 400
-    elif user_family_id == new_family_id:
-        return jsonify({'message': '用户已经是该家庭的成员'}), 400
-    else:
-        # 确保新家庭ID存在
-        family = Family.query.get(new_family_id)
-        if not family:
-            return jsonify({'message': '家庭不存在'}), 404
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'更新失败: {str(e)}'}), 500
 
-        user.family_id = new_family_id
-
-    # 更新其他信息
-    if 'name' in data:
-        user.name = data['name']
-    if 'phone' in data:
-        user.phone = data['phone']
-    if 'email' in data:
-        user.email = data['email']
-    if 'address' in data:
-        user.address = data['address']
-    if 'password' in data:
-        user.password = hash_password(data['password'])
-    if 'role' in data:
-        user.role = data['role']
-
-    # 保存到数据库
-    db.session.commit()
-
-    return jsonify({'message': '用户信息更新成功', 'user': {'username': user.username, 'role': user.role}}), 200
-
-
-# 删除账号(routes/auth.py)
 @auth_bp.route('/delete_user/<int:user_id>', methods=['DELETE'])
+@require_auth
 def delete_user(user_id):
     user = User.query.get(user_id)
-
     if not user:
         return jsonify({'message': '用户不存在'}), 404
 
-    # 删除用户
-    db.session.delete(user)
-    db.session.commit()
-
-    return jsonify({'message': '用户删除成功'}), 200
-
-# 删除账号通过username
-# @auth_bp.route('/delete_user/<string:username>', methods=['DELETE'])
-# def delete_user(username):
-#     user = User.query.filter_by(username=username).first()  # 通过 username 查找用户
-#
-#     if not user:
-#         return jsonify({'message': '用户不存在'}), 404
-#
-#     # 删除用户
-#     db.session.delete(user)
-#     db.session.commit()
-#
-#     return jsonify({'message': '用户删除成功'}), 200
+    try:
+        # 删除用户的监护关系
+        CareRelationship.query.filter(
+            (CareRelationship.guardian_id == user_id) | 
+            (CareRelationship.elderly_id == user_id)
+        ).delete()
+        
+        # 删除用户
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'message': '用户删除成功'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'删除失败: {str(e)}'}), 500
 
 # 获取个人信息
 @auth_bp.route('/get_info/<int:user_id>', methods=['GET'])
@@ -348,28 +356,43 @@ def get_username_info(username):
 
 
 @auth_bp.route('/users', methods=['GET'])
+@require_auth
 def get_users():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
+    role = request.args.get('role')
     search_query = request.args.get('q', '')
 
     query = User.query
 
+    if role:
+        query = query.filter_by(role=role)
     if search_query:
-        query = query.filter(User.username.like(f"%{search_query}%") | User.name.like(f"%{search_query}%"))
+        query = query.filter(
+            (User.username.like(f"%{search_query}%")) | 
+            (User.name.like(f"%{search_query}%"))
+        )
 
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     users = pagination.items
 
     user_list = []
     for user in users:
-        family_info = None
-        if user.family_id:
-            family = Family.query.get(user.family_id)
-            family_info = {
-                'family_id': family.family_id,
-                'family_name': family.family_name,
-            }
+        care_info = None
+        if user.role == 'guardian':
+            elderly_list = [rel.elderly_person for rel in user.as_guardian]
+            care_info = [{
+                'elderly_id': elderly.user_id,
+                'name': elderly.name,
+                'phone': elderly.phone
+            } for elderly in elderly_list]
+        elif user.role == 'elderly':
+            guardian_list = [rel.guardian for rel in user.as_elderly]
+            care_info = [{
+                'guardian_id': guardian.user_id,
+                'name': guardian.name,
+                'phone': guardian.phone
+            } for guardian in guardian_list]
 
         user_info = {
             'user_id': user.user_id,
@@ -379,7 +402,7 @@ def get_users():
             'email': user.email,
             'avatar': user.avatar,
             'role': user.role,
-            'family': family_info,
+            'care_info': care_info
         }
         user_list.append(user_info)
 

@@ -1,4 +1,5 @@
 // 引入必要的库
+import api from '../../utils/api';
 const app = getApp();
 
 Page({
@@ -10,6 +11,12 @@ Page({
     clientHeight: 0,  // 动态高度
     canSendCode: true, // 控制是否可以发送验证码
     countdown: 60, // 倒计时时间
+    roles: ['监护人', '被监护人'],
+    roleIndex: 0,
+    roleMap: {
+      0: 'guardian',
+      1: 'elderly'
+    }
   },
 
   onLoad() {
@@ -106,60 +113,49 @@ Page({
     });
   },
 
-  // 注册按钮点击事件处理函数
-  goRegister() {
-    const { username, phone, password, code } = this.data;
+  handleRoleChange(e) {
+    this.setData({
+      roleIndex: e.detail.value
+    });
+  },
 
-    if (!username || !phone || !password || !code) {
+  handleRegister(e) {
+    const formData = e.detail.value;
+    const role = this.data.roleMap[this.data.roleIndex];
+
+    if (!formData.username || !formData.password || !formData.name || !formData.phone) {
       wx.showToast({
-        title: '请填写所有必填项',
+        title: '请填写完整信息',
         icon: 'none'
       });
       return;
     }
 
-    // 调用注册接口
-    wx.request({
-      url: 'http://127.0.0.1:5000/api/auth/register', // 替换为你的实际后端URL
-      method: 'POST',
-      header: {
-        'content-type': 'application/json'
-      },
-      data: JSON.stringify({
-        username,
-        password,
-        role: 'elderly',   // 默认角色，可以根据实际情况修改
-        name: username, // 使用用户名作为姓名，可以根据实际情况修改
-        phone,
-        code,
-        email: '',      // 可选字段，可以根据实际情况修改
-        address: '',    // 可选字段，可以根据实际情况修改
-        family_id: null // 可选字段，可以根据实际情况修改
-      }),
-      success: (res) => {
-        if (res.statusCode === 201) {
-          wx.showToast({
-            title: '注册成功',
-            icon: 'success'
-          });
-          setTimeout(() => {
-            wx.navigateTo({
-              url: '/pages/login/login' // 注册成功跳转到登录页面
-            });
-          }, 1500);
-        } else {
-          wx.showToast({
-            title: res.data.message || '注册失败，请重试',
-            icon: 'none'
-          });
-        }
-      },
-      fail: () => {
-        wx.showToast({
-          title: '网络错误，请稍后再试',
-          icon: 'none'
-        });
-      }
+    wx.showLoading({
+      title: '注册中...'
+    });
+
+    api.auth.register({
+      ...formData,
+      role
+    }).then(res => {
+      wx.hideLoading();
+      app.login(res.user, res.token);
+      
+      wx.showToast({
+        title: '注册成功',
+        icon: 'success'
+      });
+
+      wx.switchTab({
+        url: '/pages/home/home'
+      });
+    }).catch(err => {
+      wx.hideLoading();
+      wx.showToast({
+        title: err.data?.message || '注册失败',
+        icon: 'none'
+      });
     });
   }
 });

@@ -1,52 +1,54 @@
 .weui-navigation-bar {
   width: 100%;
-  height: 100rpx;
-  background-color: #ffffff;
-  border-bottom: 1rpx solid #e0e0e0;
+  height: 140rpx; /* 减小高度 */
+  background-color: #4CAF50; /* 使用绿色主题 */
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
+  padding-top: 20rpx; /* 调整状态栏padding */
 }
 
 .weui-navigation-bar__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20rpx;
-  height: 100%;
+  padding: 0 30rpx;
+  height: 88rpx; /* 明确指定内部高度 */
+  margin-top: 20rpx; /* 微调位置 */
 }
 
 .weui-navigation-bar__left {
   display: flex;
-  align-items: center; /* 垂直居中 */
-  justify-content: flex-start; /* 靠左对齐 */
+  align-items: center;
   height: 100%;
 }
 
 .weui-navigation-bar__buttons {
   display: flex;
-  align-items: center; /* 垂直居中 */
+  align-items: center;
 }
 
 .weui-navigation-bar__btn_goback_wrapper {
   display: flex;
-  align-items: center; /* 垂直居中 */
-  justify-content: center; /* 水平居中 */
-  padding: 0 20rpx; /* 适当的内边距 */
+  align-items: center;
+  justify-content: center;
+  padding: 0 20rpx;
 }
 
 .weui-navigation-bar__button {
   width: 40rpx;
   height: 40rpx;
+  filter: brightness(0) invert(1); /* 将图标改为白色 */
 }
 
 .weui-navigation-bar__center {
   flex: 1;
   text-align: center;
-  font-size: 32rpx;
-  color: #000000;
+  font-size: 36rpx;
+  color: #ffffff; /* 白色文字 */
+  font-weight: 500;
 }
 
 .weui-navigation-bar__right {
