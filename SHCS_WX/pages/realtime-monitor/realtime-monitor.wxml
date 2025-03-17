@@ -1,44 +1,80 @@
 <view class="page">
-  <navigation-bar title="家庭监控" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
-    <view slot="right">
-      <button>设置</button>
+  <!-- 顶部导航栏 -->
+  <view class="nav-bar">
+    <view class="nav-bar-content">
+      <!-- 返回按钮 -->
+      <view class="back-btn" bindtap="handleBack">
+        <text class="back-icon">←</text>
+      </view>
+      <!-- 设备信息 -->
+      <view class="device-info">
+        <view class="device-name">{{deviceInfo.name}}</view>
+        <view class="device-location">{{deviceInfo.location}}</view>
+      </view>
     </view>
-  </navigation-bar>
-  <!-- 实时监控 -->
+  </view>
+
+  <!-- 主要内容区域 -->
   <view class="container">
-    <!-- 顶部导航栏 -->
-    <view class="navbar">
-      <view class="page-title">{{familyName}}家的实时监控</view>
+    <!-- 时间显示 -->
+    <view class="time-display">
+      <text class="time-text">{{currentTime}}</text>
     </view>
-    <view class="status-badge {{isPlaying ? 'active' : ''}}">
-      {{isPlaying ? '监控中' : '已暂停'}}
-    </view>
-    <view class="info-panel">
-      <view class="info-item">
-        <text class="info-label">家庭：</text>
-        <text class="info-value">幸福家园</text>
-      </view>
-      <view class="info-item">
-        <text class="info-label">位置：</text>
-        <text class="info-value">客厅摄像头</text>
-      </view>
-      <view class="info-item">
-        <text class="info-label">时间：</text>
-        <text class="info-value">{{currentTime}}</text>
+
+    <!-- 视频显示区域 -->
+    <view class="video-container {{isPlaying ? 'playing' : ''}}">
+      <image wx:if="{{isPlaying && videoSrc}}" 
+             src="{{videoSrc}}" 
+             mode="aspectFit" 
+             class="video-stream"/>
+      <view wx:if="{{isLoading}}" class="loading">加载中...</view>
+      <view wx:if="{{errorMessage}}" class="error">{{errorMessage}}</view>
+      <view wx:if="{{!isPlaying}}" class="placeholder">
+        <text>点击下方按钮开始监控</text>
       </view>
     </view>
 
-    <view class="video-container {{isPlaying ? 'playing' : ''}}">
-      <image class="video-frame" src="{{videoSrc}}" mode="aspectFit" bindload="onImageLoad" style="{{isPlaying ? '' : 'filter: grayscale(100%);'}}" />
-      <view class="loading-overlay" wx:if="{{isLoading}}">
-        <view class="loading-spinner"></view>
-        <text>加载中...</text>
+    <!-- 控制按钮 -->
+    <view class="controls">
+      <button class="control-btn {{isPlaying ? 'playing' : ''}}" 
+              bindtap="togglePlay">
+        {{isPlaying ? '停止监控' : '开始监控'}}
+      </button>
+    </view>
+
+    <!-- 警报提示 -->
+    <view wx:if="{{alertLevel > 0}}" class="alert-container">
+      <view class="alert-message">
+        检测到异常行为！警报级别: {{alertLevel}}
       </view>
-      <view class="control-panel">
-        <view class="control-button" bindtap="togglePlay">
-          <text class="{{isPlaying ? 'pause-icon' : 'play-icon'}}"></text>
-          <text>{{isPlaying ? '暂停' : '播放'}}</text>
-        </view>
+    </view>
+
+    <!-- 截图展示区域 -->
+    <view class="snapshots-container">
+      <view class="section-title">异常行为记录</view>
+      
+      <!-- 跌倒截图 -->
+      <view class="snapshot-section">
+        <view class="sub-title">跌倒记录</view>
+        <scroll-view scroll-x class="snapshot-scroll">
+          <block wx:for="{{fallSnapshots}}" wx:key="path">
+            <image src="http://127.0.0.1:5000{{item.path}}" 
+                   mode="aspectFill" 
+                   class="snapshot-image"/>
+          </block>
+        </scroll-view>
+      </view>
+
+      <!-- 坐下截图 -->
+      <view class="snapshot-section">
+        <view class="sub-title">坐下记录</view>
+        <scroll-view scroll-x class="snapshot-scroll">
+          <block wx:for="{{sitSnapshots}}" wx:key="path">
+            <image src="http://127.0.0.1:5000{{item.path}}" 
+                   mode="aspectFill" 
+                   class="snapshot-image"/>
+          </block>
+        </scroll-view>
       </view>
     </view>
   </view>

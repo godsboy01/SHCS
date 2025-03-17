@@ -1,4 +1,6 @@
-<navigation-bar title="自习室预约小程序" back="{{false}}" background="#4CAF50" color="#ffffff"/>
+<page-meta>
+  <navigation-bar title="自习室预约小程序" back="{{false}}" background="#4CAF50" color="#ffffff"/>
+</page-meta>
 <view class="auth-container">
   <view class="auth-header">
     <view class="auth-title">登录</view>
