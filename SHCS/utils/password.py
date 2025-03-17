@@ -4,7 +4,7 @@ def hash_password(password):
     """生成密码的哈希值"""
     return generate_password_hash(password)
 
-def check_password(hashed_password, password):
+def check_password(password, hashed_password):
     """验证密码是否正确"""
     return check_password_hash(hashed_password, password)
 

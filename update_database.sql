@@ -17,7 +17,7 @@ DROP TABLE IF EXISTS `families`;
 
 -- 创建新的用户表
 CREATE TABLE `users` (
-  `user_id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL COMMENT '用户名',
   `password` varchar(255) NOT NULL COMMENT '密码',
   `role` enum('admin', 'guardian', 'elderly') NOT NULL COMMENT '用户角色：管理员/监护人/被监护人',
@@ -26,8 +26,10 @@ CREATE TABLE `users` (
   `email` varchar(100) COMMENT '邮箱',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `avatar` varchar(255) COMMENT '头像',
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `uk_username` (`username`)
+  `family_id` int(11) COMMENT '家庭ID',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_username` (`username`),
+  FOREIGN KEY (`family_id`) REFERENCES `families` (`family_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
 -- 创建监护关系表
@@ -38,14 +40,14 @@ CREATE TABLE `care_relationships` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`relationship_id`),
   UNIQUE KEY `uk_guardian_elderly` (`guardian_id`, `elderly_id`),
-  FOREIGN KEY (`guardian_id`) REFERENCES `users` (`user_id`),
-  FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`)
+  FOREIGN KEY (`guardian_id`) REFERENCES `users` (`id`),
+  FOREIGN KEY (`elderly_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='监护关系表';
 
 -- 创建设备表
 CREATE TABLE `devices` (
   `device_id` int(11) NOT NULL AUTO_INCREMENT,
-  `elderly_id` int(11) NOT NULL COMMENT '被监护人ID',
+  `user_id` int(11) NOT NULL COMMENT '被监护人ID',
   `device_name` varchar(100) COMMENT '设备名称',
   `device_type` enum('camera', 'sensor') NOT NULL COMMENT '设备类型',
   `ip_address` varchar(15) NOT NULL COMMENT 'IP地址',
@@ -53,13 +55,13 @@ CREATE TABLE `devices` (
   `status` enum('active', 'inactive') DEFAULT 'active' COMMENT '设备状态',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`device_id`),
-  FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`)
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='设备表';
 
 -- 创建跌倒检测记录表
 CREATE TABLE `fall_detection_records` (
   `record_id` int(11) NOT NULL AUTO_INCREMENT,
-  `elderly_id` int(11) NOT NULL COMMENT '被监护人ID',
+  `user_id` int(11) NOT NULL COMMENT '被监护人ID',
   `device_id` int(11) NOT NULL COMMENT '检测设备ID',
   `detection_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '检测时间',
   `detection_type` enum('Fall', 'Normal') NOT NULL COMMENT '检测类型',
@@ -67,30 +69,30 @@ CREATE TABLE `fall_detection_records` (
   `video_frame_path` varchar(255) COMMENT '视频帧路径',
   `is_notified` tinyint(1) DEFAULT 0 COMMENT '是否已通知',
   PRIMARY KEY (`record_id`),
-  INDEX `idx_elderly_time` (`elderly_id`, `detection_time`),
-  FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`),
+  INDEX `idx_elderly_time` (`user_id`, `detection_time`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   FOREIGN KEY (`device_id`) REFERENCES `devices` (`device_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='跌倒检测记录表';
 
 -- 创建久坐记录表
 CREATE TABLE `sitting_records` (
   `record_id` int(11) NOT NULL AUTO_INCREMENT,
-  `elderly_id` int(11) NOT NULL COMMENT '被监护人ID',
+  `user_id` int(11) NOT NULL COMMENT '被监护人ID',
   `device_id` int(11) NOT NULL COMMENT '检测设备ID',
   `start_time` datetime NOT NULL COMMENT '开始时间',
   `end_time` datetime COMMENT '结束时间',
   `duration` int COMMENT '持续时间(分钟)',
   `is_notified` tinyint(1) DEFAULT 0 COMMENT '是否已提醒',
   PRIMARY KEY (`record_id`),
-  INDEX `idx_elderly_time` (`elderly_id`, `start_time`),
-  FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`),
+  INDEX `idx_elderly_time` (`user_id`, `start_time`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   FOREIGN KEY (`device_id`) REFERENCES `devices` (`device_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='久坐记录表';
 
 -- 创建健康数据记录表
 CREATE TABLE `health_records` (
   `record_id` int(11) NOT NULL AUTO_INCREMENT,
-  `elderly_id` int(11) NOT NULL COMMENT '被监护人ID',
+  `user_id` int(11) NOT NULL COMMENT '被监护人ID',
   `height` decimal(5,2) COMMENT '身高(cm)',
   `weight` decimal(5,2) COMMENT '体重(kg)',
   `bmi` decimal(4,2) COMMENT 'BMI指数',
@@ -100,27 +102,27 @@ CREATE TABLE `health_records` (
   `temperature` decimal(3,1) COMMENT '体温',
   `recorded_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '记录时间',
   PRIMARY KEY (`record_id`),
-  INDEX `idx_elderly_time` (`elderly_id`, `recorded_at`),
-  FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`)
+  INDEX `idx_elderly_time` (`user_id`, `recorded_at`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='健康数据记录表';
 
 -- 创建健康预警阈值表
 CREATE TABLE `health_thresholds` (
   `threshold_id` int(11) NOT NULL AUTO_INCREMENT,
-  `elderly_id` int(11) NOT NULL COMMENT '被监护人ID',
+  `user_id` int(11) NOT NULL COMMENT '被监护人ID',
   `metric_type` enum('bmi', 'blood_pressure', 'heart_rate', 'temperature', 'sitting_duration') NOT NULL COMMENT '指标类型',
   `min_value` decimal(5,2) COMMENT '最小值',
   `max_value` decimal(5,2) COMMENT '最大值',
   `warning_level` enum('normal', 'warning', 'danger') NOT NULL DEFAULT 'normal' COMMENT '警告级别',
   PRIMARY KEY (`threshold_id`),
-  UNIQUE KEY `uk_elderly_metric` (`elderly_id`, `metric_type`),
-  FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`)
+  UNIQUE KEY `uk_elderly_metric` (`user_id`, `metric_type`),
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='健康预警阈值表';
 
 -- 创建通知表
 CREATE TABLE `notifications` (
   `notification_id` int(11) NOT NULL AUTO_INCREMENT,
-  `elderly_id` int(11) NOT NULL COMMENT '被监护人ID',
+  `user_id` int(11) NOT NULL COMMENT '被监护人ID',
   `guardian_id` int(11) NOT NULL COMMENT '通知接收的监护人ID',
   `title` varchar(100) NOT NULL COMMENT '通知标题',
   `message` text NOT NULL COMMENT '通知内容',
@@ -136,8 +138,8 @@ CREATE TABLE `notifications` (
   INDEX `idx_guardian_read` (`guardian_id`, `is_read`),
   INDEX `idx_guardian_time` (`guardian_id`, `created_at`),
   INDEX `idx_source` (`source_type`, `source_id`),
-  FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`),
-  FOREIGN KEY (`guardian_id`) REFERENCES `users` (`user_id`)
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  FOREIGN KEY (`guardian_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通知表';
 
 -- 创建通知详情表
@@ -162,7 +164,7 @@ CREATE TABLE `notification_read_status` (
   PRIMARY KEY (`status_id`),
   UNIQUE KEY `uk_notification_guardian` (`notification_id`, `guardian_id`),
   FOREIGN KEY (`notification_id`) REFERENCES `notifications` (`notification_id`) ON DELETE CASCADE,
-  FOREIGN KEY (`guardian_id`) REFERENCES `users` (`user_id`)
+  FOREIGN KEY (`guardian_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通知阅读状态表';
 
 SET FOREIGN_KEY_CHECKS = 1; 

@@ -1,11 +1,10 @@
 import re
 import jwt
-import datetime  # 直接导入datetime模块
+import datetime
 from functools import wraps
 from flask import request, jsonify, current_app
 import redis
 from time import time
-import bcrypt
 from typing import Dict, Optional
 from config import Config
 
@@ -52,9 +51,7 @@ class SecurityUtils:
         return token
 
     def verify_token(self, token):
-        """
-        验证JWT token
-        """
+        """验证JWT token"""
         try:
             payload = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
             return True, payload
@@ -89,8 +86,8 @@ def require_auth(f):
         if not token:
             return jsonify({'message': '缺少认证token'}), 401
 
-        security = SecurityUtils()
-        success, result = security.verify_token(token.split(' ')[1] if ' ' in token else token)
+        security_utils = SecurityUtils()
+        success, result = security_utils.verify_token(token.split(' ')[1] if ' ' in token else token)
         if not success:
             return jsonify({'message': result}), 401
 
@@ -108,8 +105,8 @@ def require_role(roles):
             if not token:
                 return jsonify({'message': '缺少认证token'}), 401
 
-            security = SecurityUtils()
-            success, result = security.verify_token(token.split(' ')[1] if ' ' in token else token)
+            security_utils = SecurityUtils()
+            success, result = security_utils.verify_token(token.split(' ')[1] if ' ' in token else token)
             if not success:
                 return jsonify({'message': result}), 401
 
@@ -119,41 +116,6 @@ def require_role(roles):
             return f(*args, **kwargs)
         return decorated
     return decorator
-
-def hash_password(password):
-    """对密码进行哈希"""
-    if isinstance(password, str):
-        password = password.encode('utf-8')
-    return bcrypt.hashpw(password, bcrypt.gensalt())
-
-def verify_password(password, hashed_password):
-    """验证密码"""
-    if isinstance(password, str):
-        password = password.encode('utf-8')
-    if isinstance(hashed_password, str):
-        hashed_password = hashed_password.encode('utf-8')
-    try:
-        return bcrypt.checkpw(password, hashed_password)
-    except Exception as e:
-        print(f"Password verification error: {str(e)}")
-        return False
-
-def generate_token(user_id, role=None):
-    """生成JWT token"""
-    payload = {
-        'user_id': user_id,
-        'role': role
-    }
-    return jwt.encode(payload, Config.SECRET_KEY, algorithm='HS256')
-
-def verify_token(token: str, secret_key: str) -> Optional[Dict]:
-    """
-    验证JWT令牌
-    """
-    try:
-        return jwt.decode(token, secret_key, algorithms=['HS256'])
-    except jwt.InvalidTokenError:
-        return None
 
 # 添加一个简单的内存型速率限制器
 _rate_limits = {}
@@ -166,7 +128,7 @@ def rate_limit(key, limit=5, period=300):
     :param period: 时间周期（秒）
     :return: 是否允许请求
     """
-    current = time.time()
+    current = time()
     if key not in _rate_limits:
         _rate_limits[key] = []
     

@@ -105,73 +105,51 @@ def send_code():
 # 注册功能 (routes/auth.py)
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    
-    # 验证必要字段
-    required_fields = ['username', 'password', 'role', 'name', 'phone']
-    for field in required_fields:
-        if field not in data:
-            return jsonify({'message': f'缺少必要字段: {field}'}), 400
-    
-    # 验证角色
-    if data['role'] not in ['admin', 'guardian', 'elderly']:
-        return jsonify({'message': '无效的用户角色'}), 400
-    
-    # 验证密码强度
-    password_valid, password_message = SecurityUtils.validate_password_strength(data['password'])
-    if not password_valid:
-        return jsonify({'message': password_message}), 400
-    
-    # 验证用户名是否已存在
-    if User.query.filter_by(username=data['username']).first():
-        return jsonify({'message': '用户名已存在'}), 400
-        
-    # 验证手机号格式
-    if not re.match(r'^1[3-9]\d{9}$', data['phone']):
-        return jsonify({'message': '无效的手机号码'}), 400
-    
     try:
+        data = request.get_json()
+        
+        # 检查用户是否已存在
+        if User.query.filter_by(username=data['username']).first():
+            return jsonify({'code': 400, 'message': '用户名已存在'}), 400
+            
         # 创建新用户
+        hashed_password = hash_password(data['password'])
         new_user = User(
             username=data['username'],
-            password=security.hash_password(data['password']).decode('utf-8'),  # 存储为字符串
-            role=data['role'],
-            name=data['name'],
-            phone=data['phone'],
-            email=data.get('email')
+            password=hashed_password,
+            phone=data.get('phone', ''),
+            role=data.get('role', 'user'),
+            name=data.get('name', ''),
+            email=data.get('email', '')
         )
-        
         db.session.add(new_user)
+        db.session.flush()  # 获取用户ID
+        
+        # 创建默认家庭
+        default_family = Family(
+            family_name=f"{data['name']}的家",
+            family_address=""
+        )
+        db.session.add(default_family)
+        db.session.flush()
+        
+        # 更新用户的家庭ID
+        new_user.family_id = default_family.family_id
+        
         db.session.commit()
         
-        # 如果是被监护人，且指定了监护人ID，创建监护关系
-        guardian_id = data.get('guardian_id')
-        if data['role'] == 'elderly' and guardian_id:
-            guardian = User.query.get(guardian_id)
-            if guardian and guardian.role == 'guardian':
-                care_relationship = CareRelationship(
-                    guardian_id=guardian_id,
-                    elderly_id=new_user.user_id
-                )
-                db.session.add(care_relationship)
-        
-        # 生成token
-        token = security.generate_token(new_user.user_id, new_user.role)
-        
         return jsonify({
+            'code': 200,
             'message': '注册成功',
-            'token': token,
-            'user': {
+            'data': {
                 'user_id': new_user.user_id,
                 'username': new_user.username,
-                'role': new_user.role,
-                'name': new_user.name
+                'family_id': new_user.family_id
             }
-        }), 201
-        
+        })
     except Exception as e:
         db.session.rollback()
-        return jsonify({'message': f'注册失败: {str(e)}'}), 500
+        return jsonify({'code': 500, 'message': str(e)}), 500
 
 # 登录功能 (routes/auth.py)
 @auth_bp.route('/login', methods=['POST'])
@@ -180,31 +158,27 @@ def login():
     username = data.get('username')
     password = data.get('password')
 
-    # 查找用户
+    if not username or not password:
+        return jsonify({'message': '用户名和密码不能为空'}), 400
+
     user = User.query.filter_by(username=username).first()
-    
-    # 验证用户和密码
-    if user and security.verify_password(password, user.password):
-        # 生成token，添加role信息
-        token = security.generate_token(user.user_id, user.role)  # 添加role参数
+    if user and check_password(password, user.password):
+        security_utils = SecurityUtils()  # 创建 SecurityUtils 实例
+        token = security_utils.generate_token(user.user_id, user.role)  # 使用实例方法生成 token
         return jsonify({
             'message': '登录成功',
             'token': token,
-            'user': {
-                'user_id': user.user_id,
-                'username': user.username,
-                'name': user.name,
-                'role': user.role
-            }
+            'user_id': user.user_id,
+            'role': user.role
         }), 200
-    
     return jsonify({'message': '用户名或密码错误'}), 401
 
 @auth_bp.route('/profile', methods=['GET'])
 @require_auth
 def get_profile():
     token = request.headers.get('Authorization').split(' ')[1]
-    success, payload = security.verify_token(token)
+    security_utils = SecurityUtils()  # 创建 SecurityUtils 实例
+    success, payload = security_utils.verify_token(token)  # 使用实例方法验证 token
     if not success:
         return jsonify({'message': payload}), 401
         
@@ -262,7 +236,7 @@ def update_user(user_id):
         if 'password' in data:
             if not SecurityUtils.validate_password_strength(data['password']):
                 return jsonify({'message': '密码强度不足'}), 400
-            user.password = security.hash_password(data['password']).decode('utf-8')
+            user.password = hash_password(data['password'])
 
         # 更新监护关系
         if 'guardian_id' in data and user.role == 'elderly':
@@ -315,6 +289,9 @@ def get_user_info(user_id):
     if not user:
         return jsonify({'message': '用户不存在'}), 404
 
+    # 获取家庭地址
+    family_address = user.family.family_address if user.family else None
+
     # 返回用户信息
     user_info = {
         'user_id': user.user_id,
@@ -323,9 +300,9 @@ def get_user_info(user_id):
         'name': user.name,
         'phone': user.phone,
         'email': user.email,
-        'address': user.address,
         'avatar': user.avatar,  # 用户头像 URL
         'family_id': user.family_id,
+        'family_address': family_address,
         'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S')  # 格式化时间
     }
 

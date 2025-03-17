@@ -2,7 +2,7 @@
 
 from flask import Blueprint, request, jsonify
 from models.models import User, Family, Device, db
-from werkzeug.security import generate_password_hash
+from utils.password import hash_password
 import re
 
 family_bp = Blueprint('family', __name__)
@@ -50,7 +50,7 @@ def add_family_member():
     if User.query.filter_by(username=username).first():
         return jsonify({'message': '用户名已存在'}), 400
 
-    hashed_password = generate_password_hash(password)
+    hashed_password = hash_password(password)
 
     new_user = User(
         username=username,
