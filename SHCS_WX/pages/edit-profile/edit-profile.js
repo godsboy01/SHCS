@@ -1,4 +1,5 @@
-const api = require('../../utils/api')
+const api = require('../../utils/api').api
+const { STATIC_URL } = require('../../utils/api')
 
 Page({
   data: {
@@ -6,7 +7,8 @@ Page({
     userInfo: {
       name: '',
       phone: '',
-      email: ''
+      email: '',
+      avatar: ''
     },
     isLoading: true,   // 加载状态
     errorMessage: '',  // 错误信息
@@ -44,8 +46,10 @@ Page({
     try {
       const res = await api.auth.getProfile();
       if (res) {
+        // 处理头像URL
+        const avatar = res.avatar ? `${STATIC_URL}${res.avatar}` : '';
         this.setData({
-          userInfo: res,
+          userInfo: { ...res, avatar },
           isLoading: false
         });
       } else {
@@ -89,7 +93,7 @@ Page({
 
   // 提交表单
   async handleSubmit() {
-    const { name, phone, email } = this.data.userInfo
+    const { name, phone, email, user_id } = this.data.userInfo
     
     // 验证表单
     if (!name.trim()) {
@@ -116,13 +120,21 @@ Page({
       return
     }
 
+    if (!user_id) {
+      wx.showToast({
+        title: '用户信息无效',
+        icon: 'none'
+      })
+      return
+    }
+
     wx.showLoading({
       title: '保存中...',
       mask: true
     })
 
     try {
-      await api.auth.updateProfile({
+      await api.auth.updateProfile(user_id, {
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim()

@@ -1,5 +1,5 @@
 const app = getApp()
-const api = require('../../utils/api')
+const { api, STATIC_URL } = require('../../utils/api')
 
 Page({
   data: {
@@ -34,9 +34,12 @@ Page({
       ])
 
       if (userRes && familyRes) {
+        // 处理头像URL
+        const avatar = userRes.avatar ? `${STATIC_URL}${userRes.avatar}` : '';
         this.setData({
           userInfo: {
             ...userRes,
+            avatar,
             family_address: familyRes.address || '未设置家庭地址'
           }
         })
@@ -102,7 +105,7 @@ Page({
     try {
       const uploadRes = await new Promise((resolve, reject) => {
         wx.uploadFile({
-          url: 'http://localhost:5000/api/auth/upload_avatar',
+          url: `${STATIC_URL}/api/auth/upload_avatar`,
           filePath: filePath,
           name: 'avatar',
           formData: {
@@ -132,8 +135,9 @@ Page({
       if (data.code === 200) {
         // 更新本地头像，添加时间戳防止缓存
         const timestamp = new Date().getTime()
+        const avatarUrl = `${STATIC_URL}${data.data.avatar_url}?t=${timestamp}`
         this.setData({
-          'userInfo.avatar': `${data.data.avatar_url}?t=${timestamp}`
+          'userInfo.avatar': avatarUrl
         })
         wx.showToast({
           title: '头像更新成功',

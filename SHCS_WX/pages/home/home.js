@@ -1,5 +1,5 @@
 // pages/home/home.js
-const api = require('../../utils/api');
+const { api } = require('../../utils/api');
 const weatherService = require('../../utils/weather');
 const app = getApp();
 
@@ -19,12 +19,26 @@ Page({
   },
 
   onLoad() {
+    const token = wx.getStorageSync('token');
+    if (!token) {
+      wx.redirectTo({
+        url: '/pages/login/login'
+      });
+      return;
+    }
     this.loadDevices();
     this.initWeather();
     this.setCurrentDate();
   },
 
   onShow() {
+    const token = wx.getStorageSync('token');
+    if (!token) {
+      wx.redirectTo({
+        url: '/pages/login/login'
+      });
+      return;
+    }
     this.loadDevices();
   },
 
@@ -38,14 +52,17 @@ Page({
 
     try {
       const res = await api.device.getDevices();
-      const devices = res.devices || [];
-
-      this.setData({
-        cameras: devices.filter(d => d.device_type === 'camera'),
-        weightScales: devices.filter(d => d.device_type === 'weight_scale'),
-        bloodPressures: devices.filter(d => d.device_type === 'blood_pressure')
-      });
+      if (res && res.devices) {
+        this.setData({
+          cameras: res.devices.filter(d => d.device_type === 'camera'),
+          weightScales: res.devices.filter(d => d.device_type === 'weight_scale'),
+          bloodPressures: res.devices.filter(d => d.device_type === 'blood_pressure')
+        });
+      } else {
+        throw new Error('获取设备列表失败');
+      }
     } catch (err) {
+      console.error('加载设备失败:', err);
       wx.showToast({
         title: '加载失败',
         icon: 'none'

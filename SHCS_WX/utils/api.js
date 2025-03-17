@@ -1,6 +1,7 @@
 // utils/api.js
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'http://127.0.0.1:5000/api';
+const STATIC_URL = 'http://127.0.0.1:5000';
 
 const request = (url, options = {}) => {
   return new Promise((resolve, reject) => {
@@ -34,6 +35,14 @@ const api = {
       header: {
         'Authorization': `Bearer ${wx.getStorageSync('token')}`
       }
+    }),
+    updateProfile: (userId, data) => request(`/auth/update_user/${userId}`, {
+      method: 'PUT',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
+      },
+      data
     })
   },
   // 家庭信息相关
@@ -133,4 +142,9 @@ const api = {
   }
 };
 
-module.exports = api;  // 使用module.exports导出
+// 导出BASE_URL和STATIC_URL供其他模块使用
+module.exports = {
+  api,
+  BASE_URL,
+  STATIC_URL
+};

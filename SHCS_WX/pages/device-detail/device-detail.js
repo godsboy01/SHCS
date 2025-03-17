@@ -1,4 +1,4 @@
-const api = require('../../utils/api');
+const { api } = require('../../utils/api');
 
 Page({
   data: {
@@ -12,6 +12,13 @@ Page({
   },
 
   onLoad(options) {
+    const token = wx.getStorageSync('token');
+    if (!token) {
+      wx.redirectTo({
+        url: '/pages/login/login'
+      });
+      return;
+    }
     this.deviceId = options.id;
     this.loadDeviceInfo();
   },
@@ -26,6 +33,7 @@ Page({
       if (device) {
         // 确保device_type存在，如果不存在则设为'other'
         device.device_type = device.device_type || 'other';
+        device.typeText = this.data.deviceTypes[device.device_type] || '未知';
         this.setData({ device });
       } else {
         wx.showToast({
@@ -63,14 +71,18 @@ Page({
     });
 
     try {
-      await api.device.updateDevice(this.deviceId, formData);
-      wx.showToast({
-        title: '保存成功',
-        icon: 'success'
-      });
-      
-      // 刷新设备信息
-      this.loadDeviceInfo();
+      const res = await api.device.updateDevice(this.deviceId, formData);
+      if (res) {
+        wx.showToast({
+          title: '保存成功',
+          icon: 'success'
+        });
+        
+        // 刷新设备信息
+        this.loadDeviceInfo();
+      } else {
+        throw new Error('更新设备失败');
+      }
     } catch (err) {
       console.error('更新设备失败:', err);
       wx.showToast({

@@ -1,5 +1,5 @@
 // pages/device-manage/device-manage.js
-const api = require('../../utils/api');
+const { api } = require('../../utils/api');
 const app = getApp();
 
 Page({
@@ -22,6 +22,13 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
+    const token = wx.getStorageSync('token');
+    if (!token) {
+      wx.redirectTo({
+        url: '/pages/login/login'
+      });
+      return;
+    }
     this.loadDevices();
   },
 
@@ -36,7 +43,14 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow() {
-
+    const token = wx.getStorageSync('token');
+    if (!token) {
+      wx.redirectTo({
+        url: '/pages/login/login'
+      });
+      return;
+    }
+    this.loadDevices();
   },
 
   /**
@@ -76,16 +90,22 @@ Page({
 
   // 加载设备列表
   async loadDevices() {
+    if (this.data.loading) return;
     this.setData({ loading: true });
     try {
       const res = await api.device.getDevices();
-      this.setData({ 
-        devices: res.devices.map(device => ({
-          ...device,
-          typeText: this.data.deviceTypes[device.device_type]
-        }))
-      });
+      if (res && res.devices) {
+        this.setData({ 
+          devices: res.devices.map(device => ({
+            ...device,
+            typeText: this.data.deviceTypes[device.device_type] || '未知'
+          }))
+        });
+      } else {
+        throw new Error('获取设备列表失败');
+      }
     } catch (err) {
+      console.error('加载设备失败:', err);
       wx.showToast({
         title: '加载失败',
         icon: 'none'
@@ -127,6 +147,7 @@ Page({
             });
             this.loadDevices();
           } catch (err) {
+            console.error('删除设备失败:', err);
             wx.showToast({
               title: '删除失败',
               icon: 'none'
