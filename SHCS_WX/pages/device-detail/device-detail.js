@@ -22,9 +22,10 @@ Page({
     });
 
     try {
-      const devices = await api.device.getDevices();
-      const device = devices.devices.find(d => d.device_id === parseInt(this.deviceId));
+      const device = await api.device.getDeviceDetail(this.deviceId);
       if (device) {
+        // 确保device_type存在，如果不存在则设为'other'
+        device.device_type = device.device_type || 'other';
         this.setData({ device });
       } else {
         wx.showToast({
@@ -36,6 +37,7 @@ Page({
         }, 1500);
       }
     } catch (err) {
+      console.error('加载设备详情失败:', err);
       wx.showToast({
         title: '加载失败',
         icon: 'none'
@@ -70,6 +72,7 @@ Page({
       // 刷新设备信息
       this.loadDeviceInfo();
     } catch (err) {
+      console.error('更新设备失败:', err);
       wx.showToast({
         title: err.data?.message || '保存失败',
         icon: 'none'
@@ -95,6 +98,7 @@ Page({
               wx.navigateBack();
             }, 1500);
           } catch (err) {
+            console.error('删除设备失败:', err);
             wx.showToast({
               title: '删除失败',
               icon: 'none'

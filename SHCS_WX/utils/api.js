@@ -36,6 +36,37 @@ const api = {
       }
     })
   },
+  // 家庭信息相关
+  family: {
+    getFamilyInfo: () => request('/family/info', {
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      }
+    }),
+    updateAddress: (data) => request('/family/address', {
+      method: 'PUT',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      },
+      data
+    }),
+    addMember: (data) => request('/family/members', {
+      method: 'POST',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      },
+      data
+    }),
+    deleteMember: (data) => request('/family/members', {
+      method: 'DELETE',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      },
+      data
+    }),
+    transferMember: (data) => request('/api/family/transfer_member', 'POST', data)
+  },
   createFamily: (familyName) => request('/family/create_family', {
     method: 'POST',
     data: { family_name: familyName },
@@ -68,6 +99,13 @@ const api = {
         'Authorization': `Bearer ${wx.getStorageSync('token')}`
       },
       data: params
+    }),
+    // 获取设备详情
+    getDeviceDetail: (deviceId) => request(`/device/devices/${deviceId}`, {
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      }
     }),
     // 添加设备
     addDevice: (data) => request('/device/devices', {

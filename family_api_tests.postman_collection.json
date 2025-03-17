@@ -1,0 +1,279 @@
+{
+	"info": {
+		"_postman_id": "b5e7b5e7-b5e7-b5e7-b5e7-b5e7b5e7b5e7",
+		"name": "家庭信息管理 API 测试",
+		"description": "智慧养老系统家庭信息管理模块的 API 测试集合",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000/api",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "认证相关",
+			"item": [
+				{
+					"name": "用户登录",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set(\"token\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "登录并获取 token"
+					}
+				}
+			]
+		},
+		{
+			"name": "家庭信息管理",
+			"item": [
+				{
+					"name": "获取家庭信息",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/family/info",
+							"host": ["{{base_url}}"],
+							"path": ["family", "info"]
+						},
+						"description": "获取当前用户的家庭信息"
+					}
+				},
+				{
+					"name": "更新家庭地址",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"address\": \"浙江省杭州市西湖区文三路 XXX 号\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/family/address",
+							"host": ["{{base_url}}"],
+							"path": ["family", "address"]
+						},
+						"description": "更新家庭地址"
+					}
+				},
+				{
+					"name": "添加家庭成员",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"13800138000\",\n    \"role\": \"guardian\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/family/members",
+							"host": ["{{base_url}}"],
+							"path": ["family", "members"]
+						},
+						"description": "添加新的家庭成员"
+					}
+				},
+				{
+					"name": "删除家庭成员",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/family/members",
+							"host": ["{{base_url}}"],
+							"path": ["family", "members"]
+						},
+						"description": "删除指定的家庭成员"
+					}
+				}
+			]
+		},
+		{
+			"name": "错误测试",
+			"item": [
+				{
+					"name": "无效 Token 测试",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid_token",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/family/info",
+							"host": ["{{base_url}}"],
+							"path": ["family", "info"]
+						},
+						"description": "使用无效的 token 测试认证"
+					}
+				},
+				{
+					"name": "无效手机号测试",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"12345\",\n    \"role\": \"guardian\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/family/members",
+							"host": ["{{base_url}}"],
+							"path": ["family", "members"]
+						},
+						"description": "使用无效的手机号格式测试添加成员"
+					}
+				},
+				{
+					"name": "无效角色测试",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"13800138000\",\n    \"role\": \"invalid_role\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/family/members",
+							"host": ["{{base_url}}"],
+							"path": ["family", "members"]
+						},
+						"description": "使用无效的角色类型测试添加成员"
+					}
+				},
+				{
+					"name": "删除自己测试",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/family/members",
+							"host": ["{{base_url}}"],
+							"path": ["family", "members"]
+						},
+						"description": "尝试删除自己"
+					}
+				}
+			]
+		}
+	]
+} 

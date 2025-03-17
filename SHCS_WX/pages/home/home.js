@@ -64,37 +64,34 @@ Page({
 
     try {
       const locationInfo = await weatherService.getLocation();
+      let weatherData;
       
-      if (locationInfo) {
-        const city = locationInfo.city;
-        const weatherData = await weatherService.getWeather(city);
-        
-        if (weatherData) {
-          this.setData({
-            weather: {
-              ...this.data.weather,
-              temp: weatherData.temp,
-              text: weatherData.text,
-              location: `${city}`
-            }
-          });
-        }
+      if (locationInfo && locationInfo.city) {
+        weatherData = await weatherService.getWeather(locationInfo.city);
       } else {
-        const weatherData = await weatherService.getWeather(this.data.defaultCity);
+        console.log('使用默认城市:', this.data.defaultCity);
+        weatherData = await weatherService.getWeather(this.data.defaultCity);
+      }
+
+      if (weatherData) {
         this.setData({
           weather: {
             ...this.data.weather,
             temp: weatherData.temp,
             text: weatherData.text,
-            location: this.data.defaultCity
+            location: weatherData.location
           }
         });
       }
     } catch (err) {
       console.error('初始化天气失败:', err);
-      wx.showToast({
-        title: '获取天气信息失败',
-        icon: 'none'
+      this.setData({
+        weather: {
+          ...this.data.weather,
+          temp: '--',
+          text: '获取失败',
+          location: this.data.defaultCity
+        }
       });
     } finally {
       wx.hideLoading();

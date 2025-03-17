@@ -45,7 +45,7 @@ class SecurityUtils:
             'role': role,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1)  # 1天过期
         }
-        token = jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
+        token = jwt.encode(payload, Config.SECRET_KEY, algorithm='HS256')
         if isinstance(token, bytes):
             return token.decode('utf-8')
         return token
@@ -53,7 +53,7 @@ class SecurityUtils:
     def verify_token(self, token):
         """验证JWT token"""
         try:
-            payload = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+            payload = jwt.decode(token, Config.SECRET_KEY, algorithms=['HS256'])
             return True, payload
         except jwt.ExpiredSignatureError:
             return False, "Token已过期"

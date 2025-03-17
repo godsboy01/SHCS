@@ -1,8 +1,9 @@
 # routes/family.py
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from models.models import User, Family, Device, db
 from utils.password import hash_password
+from utils.auth import login_required
 import re
 
 family_bp = Blueprint('family', __name__)
@@ -26,59 +27,113 @@ def create_family():
 
     return jsonify({'message': '家庭创建成功', 'family_id': new_family.family_id}), 201
 
-# 添加家人
-@family_bp.route('/add_member', methods=['POST'])
-def add_family_member():
-    data = request.get_json()
-    family_id = data.get('family_id')
-    username = data.get('username')
-    password = data.get('password')
-    role = data.get('role')
-    name = data.get('name')
-    phone = data.get('phone')
-    email = data.get('email')
-    address = data.get('address')
+# 获取家庭信息
+@family_bp.route('/info', methods=['GET'])
+@login_required
+def get_family_info():
+    user = g.current_user
+    if not user.family_id:
+        return jsonify({'message': '用户未加入家庭'}), 404
 
-    # 输入验证
-    if not all([family_id, username, password, role, name, phone]):
+    family = Family.query.get(user.family_id)
+    if not family:
+        return jsonify({'message': '家庭不存在'}), 404
+
+    # 获取家庭成员信息
+    members = User.query.filter_by(family_id=user.family_id).all()
+    members_list = [{
+        'user_id': member.user_id,
+        'name': member.name,
+        'phone': member.phone,
+        'role': member.role,
+        'avatar': member.avatar
+    } for member in members]
+
+    return jsonify({
+        'address': family.family_address,
+        'members': members_list
+    }), 200
+
+# 更新家庭地址
+@family_bp.route('/address', methods=['PUT'])
+@login_required
+def update_family_address():
+    user = g.current_user
+    if not user.family_id:
+        return jsonify({'message': '用户未加入家庭'}), 404
+
+    data = request.get_json()
+    address = data.get('address')
+    
+    if not address or not address.strip():
+        return jsonify({'message': '地址不能为空'}), 400
+
+    family = Family.query.get(user.family_id)
+    if not family:
+        return jsonify({'message': '家庭不存在'}), 404
+
+    family.family_address = address.strip()
+    db.session.commit()
+
+    return jsonify({'message': '地址更新成功'}), 200
+
+# 添加家庭成员
+@family_bp.route('/members', methods=['POST'])
+@login_required
+def add_family_member():
+    user = g.current_user
+    if not user.family_id:
+        return jsonify({'message': '用户未加入家庭'}), 404
+
+    data = request.get_json()
+    phone = data.get('phone')
+
+    if not phone:
+        return jsonify({'message': '缺少手机号'}), 400
+
+    if not re.match(r'^1[3-9]\d{9}$', phone):
+        return jsonify({'message': '无效的手机号码'}), 400
+
+    # 检查手机号是否已注册
+    target_user = User.query.filter_by(phone=phone).first()
+    if not target_user:
+        return jsonify({'message': '该用户未注册'}), 404
+
+    try:
+        # 直接更新用户的family_id
+        target_user.family_id = user.family_id
+        db.session.commit()
+        return jsonify({'message': '成员添加成功'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'添加失败: {str(e)}'}), 500
+
+# 删除家庭成员
+@family_bp.route('/members', methods=['DELETE'])
+@login_required
+def delete_family_member():
+    user = g.current_user
+    if not user.family_id:
+        return jsonify({'message': '用户未加入家庭'}), 404
+
+    data = request.get_json()
+    user_id = data.get('userId')
+
+    if not user_id:
         return jsonify({'message': '缺少必要参数'}), 400
 
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email) and email is not None:
-        return jsonify({'message': '无效的邮箱地址'}), 400
+    target_user = User.query.get(user_id)
+    if not target_user or target_user.family_id != user.family_id:
+        return jsonify({'message': '用户不存在或不属于当前家庭'}), 404
 
-    # 检查用户名是否已存在
-    if User.query.filter_by(username=username).first():
-        return jsonify({'message': '用户名已存在'}), 400
+    # 不能删除自己
+    if target_user.user_id == user.user_id:
+        return jsonify({'message': '不能删除自己'}), 400
 
-    hashed_password = hash_password(password)
-
-    new_user = User(
-        username=username,
-        password=hashed_password,
-        role=role,
-        name=name,
-        phone=phone,
-        email=email,
-        address=address,
-        family_id=family_id
-    )
-
-    db.session.add(new_user)
+    target_user.family_id = None
     db.session.commit()
 
-    return jsonify({'message': '家人添加成功', 'user_id': new_user.user_id}), 201
-
-# 删除家人
-@family_bp.route('/delete_member/<int:user_id>', methods=['DELETE'])
-def delete_family_member(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'message': '用户不存在'}), 404
-
-    db.session.delete(user)
-    db.session.commit()
-
-    return jsonify({'message': '家人删除成功'}), 200
+    return jsonify({'message': '成员删除成功'}), 200
 
 # 编辑家人信息
 @family_bp.route('/update_member/<int:user_id>', methods=['PUT'])
@@ -206,3 +261,39 @@ def get_family(family_id):
     }
 
     return jsonify(family_info), 200
+
+# 转移用户到新家庭
+@family_bp.route('/transfer_member', methods=['POST'])
+@login_required
+def transfer_member():
+    user = g.current_user
+    if not user.family_id:
+        return jsonify({'message': '您未加入家庭'}), 404
+
+    data = request.get_json()
+    phone = data.get('phone')
+
+    if not phone:
+        return jsonify({'message': '缺少必要参数'}), 400
+
+    if not re.match(r'^1[3-9]\d{9}$', phone):
+        return jsonify({'message': '无效的手机号码'}), 400
+
+    # 检查手机号是否已注册
+    target_user = User.query.filter_by(phone=phone).first()
+    if not target_user:
+        return jsonify({'message': '该用户未注册'}), 404
+
+    # 保存原始角色
+    original_role = target_user.role
+
+    # 先退出原家庭
+    target_user.family_id = None
+    db.session.commit()
+
+    # 加入新家庭
+    target_user.family_id = user.family_id
+    target_user.role = original_role  # 保持原有角色
+    db.session.commit()
+
+    return jsonify({'message': '成员转移成功'}), 200

@@ -31,6 +31,22 @@ def get_devices():
         } for device in devices]
     }), 200
 
+# 获取单个设备详情
+@device_bp.route('/devices/<int:device_id>', methods=['GET'])
+@require_auth
+def get_device_detail(device_id):
+    device = Device.query.get_or_404(device_id)
+    return jsonify({
+        'device_id': device.device_id,
+        'device_name': device.device_name,
+        'device_type': device.device_type,
+        'location': device.location,
+        'ip_address': device.ip_address,
+        'status': device.status,
+        'last_active': device.last_active.strftime('%Y-%m-%d %H:%M:%S') if device.last_active else None,
+        'description': device.description
+    }), 200
+
 # 添加设备
 @device_bp.route('/devices', methods=['POST'])
 @require_auth

@@ -23,48 +23,94 @@ UPLOAD_FOLDER = 'D:/zwd/Pictures/Saved Pictures'
 
 @auth_bp.route('/get_avatar/<int:user_id>')
 def serve_avatar(user_id):
-    # 假设头像文件名是 user_id.jpg
-    filename = f"{user_id}.jpg"
-    avatar_path = os.path.join('static', 'avatars', filename)
+    try:
+        # 确保头像目录存在
+        avatar_dir = os.path.join(current_app.root_path, 'static', 'avatars')
+        if not os.path.exists(avatar_dir):
+            os.makedirs(avatar_dir)
 
-    if os.path.exists(avatar_path):
-        return send_from_directory('static/avatars', filename)
-    else:
-        # 如果找不到对应的头像文件，返回404错误
-        abort(404, description="Avatar not found")
-# 上传头像
-@auth_bp.route('/upload_avatar/<int:user_id>', methods=['POST'])
-def upload_avatar(user_id):
-    if 'file' not in request.files:
-        return jsonify({'message': '未上传文件'}), 400
+        # 假设头像文件名是 user_id.jpg
+        filename = f"{user_id}.jpg"
+        avatar_path = os.path.join(avatar_dir, filename)
 
-    file = request.files['file']
+        if os.path.exists(avatar_path):
+            return send_from_directory(os.path.join(current_app.root_path, 'static', 'avatars'), filename)
+        else:
+            # 如果找不到对应的头像文件，返回默认头像
+            default_avatar = os.path.join(current_app.root_path, 'static', 'default-avatar.jpg')
+            if os.path.exists(default_avatar):
+                return send_from_directory(os.path.join(current_app.root_path, 'static'), 'default-avatar.jpg')
+            return jsonify({'message': '头像不存在'}), 404
+    except Exception as e:
+        print(f"Error serving avatar: {str(e)}")
+        return jsonify({'message': '服务器错误'}), 500
+
+@auth_bp.route('/upload_avatar', methods=['POST'])
+@require_auth
+def upload_avatar():
+    if 'avatar' not in request.files:
+        return jsonify({
+            'code': 400,
+            'message': '未上传文件'
+        }), 400
+
+    file = request.files['avatar']
     if file.filename == '':
-        return jsonify({'message': '未选择文件'}), 400
+        return jsonify({
+            'code': 400,
+            'message': '未选择文件'
+        }), 400
 
-    # 使用 user_id 作为文件名
-    unique_filename = f"{user_id}.jpg"
+    user_id = request.form.get('user_id')
+    if not user_id:
+        return jsonify({
+            'code': 400,
+            'message': '缺少用户ID'
+        }), 400
 
-    # 使用 Flask 应用的配置来获取上传目录
-    upload_folder = os.path.join(current_app.root_path, 'static', 'avatars')
-    if not os.path.exists(upload_folder):
-        os.makedirs(upload_folder)  # 如果目录不存在则创建
+    try:
+        # 确保上传目录存在
+        upload_folder = os.path.join(current_app.root_path, 'static', 'avatars')
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
 
-    file_path = os.path.join(upload_folder, unique_filename)
+        # 使用 user_id 作为文件名
+        filename = f"{user_id}.jpg"
+        file_path = os.path.join(upload_folder, filename)
 
-    # 保存文件
-    file.save(file_path)
+        # 保存文件
+        file.save(file_path)
 
-    # 更新用户头像 URL
-    user = User.query.get(user_id)
-    # avatar_url = f"/uploads/avatars/{unique_filename}"  # 相对于服务器根目录的路径
-    avatar_url = f"/static/avatars/{unique_filename}"  # 相对于服务器根目录的路径
-    user.avatar = avatar_url
-    db.session.commit()
+        # 更新用户头像 URL
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({
+                'code': 404,
+                'message': '用户不存在'
+            }), 404
 
-    # 返回完整的URL以便前端可以直接使用
-    full_avatar_url = f"http://{request.host}{avatar_url}"
-    return jsonify({'message': '头像上传成功', 'avatar_url': full_avatar_url}), 200
+        # 设置相对路径
+        avatar_url = f"/static/avatars/{filename}"
+        user.avatar = avatar_url
+        db.session.commit()
+
+        # 返回完整的URL
+        full_avatar_url = f"http://{request.host}{avatar_url}"
+        return jsonify({
+            'code': 200,
+            'message': '头像上传成功',
+            'data': {
+                'avatar_url': full_avatar_url
+            }
+        }), 200
+
+    except Exception as e:
+        print(f"Error uploading avatar: {str(e)}")
+        db.session.rollback()
+        return jsonify({
+            'code': 500,
+            'message': f'上传失败: {str(e)}'
+        }), 500
 
 
 # 存储验证码信息

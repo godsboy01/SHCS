@@ -1,0 +1,108 @@
+<page-meta>
+  <navigation-bar 
+    title="家庭信息管理" 
+    background="#4CAF50" 
+    color="#ffffff"
+    back="{{true}}"
+  />
+</page-meta>
+
+<view class="container">
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{isLoading}}">
+    <view class="loading"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 主要内容 -->
+  <block wx:else>
+    <!-- 家庭地址区域 -->
+    <view class="address-section">
+      <view class="section-title">家庭地址</view>
+      <view class="address-form">
+        <textarea 
+          class="address-input" 
+          placeholder="请输入详细地址" 
+          value="{{address}}"
+          bindinput="handleAddressInput"
+          maxlength="100"
+        />
+        <button class="save-address-btn" bindtap="saveAddress" loading="{{isSaving}}">
+          {{isSaving ? '保存中...' : '保存地址'}}
+        </button>
+      </view>
+    </view>
+
+    <!-- 家庭成员区域 -->
+    <view class="member-section">
+      <view class="section-header">
+        <text class="section-title">家庭成员</text>
+        <button class="add-member-btn" bindtap="showAddMember">
+          <text class="add-icon">+</text>
+          添加成员
+        </button>
+      </view>
+
+      <!-- 成员列表 -->
+      <view class="member-list" wx:if="{{familyMembers.length > 0}}">
+        <view class="member-item" wx:for="{{familyMembers}}" wx:key="user_id">
+          <view class="member-info">
+            <image class="member-avatar" src="{{item.avatar || '/assets/images/default-avatar.png'}}" mode="aspectFill"/>
+            <view class="member-detail">
+              <text class="member-name">{{item.name || '未设置姓名'}}</text>
+              <text class="member-role">家庭成员</text>
+            </view>
+          </view>
+          <view class="member-actions">
+            <text class="member-phone">{{item.phone || '未设置手机号'}}</text>
+            <button class="delete-btn" data-id="{{item.user_id}}" bindtap="deleteMember" hover-class="delete-btn-hover">
+              <image class="delete-icon" src="/assets/images/delete.png"/>
+              删除
+            </button>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-state" wx:else>
+        <image class="empty-icon" src="/assets/images/empty-family.png"/>
+        <text class="empty-text">暂无家庭成员</text>
+        <text class="empty-subtext">点击上方按钮添加成员</text>
+      </view>
+    </view>
+  </block>
+</view>
+
+<!-- 添加成员弹窗 -->
+<view class="modal" wx:if="{{showAddModal}}" bindtap="hideAddMember">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">添加家庭成员</text>
+      <text class="close-btn" bindtap="hideAddMember">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="label">手机号</text>
+        <input 
+          class="input" 
+          type="number" 
+          placeholder="请输入手机号" 
+          value="{{newMember.phone}}"
+          data-field="phone"
+          bindinput="handleModalInput"
+          maxlength="11"
+        />
+      </view>
+      <view class="form-item">
+        <text class="label">提示</text>
+        <text class="tip-text">新成员将被添加为被监护人，您可以稍后在个人主页修改其角色</text>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="cancel-btn" bindtap="hideAddMember">取消</button>
+      <button class="confirm-btn" bindtap="addMember" loading="{{isAdding}}">
+        {{isAdding ? '添加中...' : '确定'}}
+      </button>
+    </view>
+  </view>
+</view> 

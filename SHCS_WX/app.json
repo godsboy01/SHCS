@@ -16,18 +16,20 @@
     "pages/bloodpressure-record/bloodpressure-record",
     "pages/test/test",
     "pages/message-list/message-list",
-    "pages/message-detail/message-detail"
+    "pages/message-detail/message-detail",
+    "pages/user-profile/user-profile",
+    "pages/edit-family/edit-family",
+    "pages/family-manage/family-manage"
   ],
   "window": {
-    "navigationBarTitleText": "居家护理系统",
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "智慧养老",
     "navigationBarTextStyle": "black",
     "navigationStyle": "custom",
     "backgroundColor": "#efefef",
-    "enablePullDownRefresh": true,
-    "navigationBarBackgroundColor": "#000000"
-    
+    "enablePullDownRefresh": true
   },
-
 
   "tabBar": {
     "list": [{
@@ -43,7 +45,7 @@
       "selectedIconPath": "./assets/tabbar/notation_active.png"
     },
     {
-      "pagePath": "pages/profile/profile",
+      "pagePath": "pages/user-profile/user-profile",
       "text": "个人主页",
       "iconPath": "./assets/tabbar/people.png",
       "selectedIconPath": "./assets/tabbar/people_active.png"
@@ -67,7 +69,9 @@
     "scope.userLocation": {
       "desc": "你的位置信息将用于小程序位置接口的效果展示"
     }
-  }
+  },
+  "style": "v2",
+  "usingComponents": {}
 }
 
 

@@ -1,40 +1,79 @@
 .container {
-  padding: 120rpx 30rpx 40rpx;
   min-height: 100vh;
-  background: #f5f5f5;
+  background-color: #f5f5f5;
+  padding: 140rpx 30rpx 40rpx;
+  box-sizing: border-box;
 }
 
+/* 加载中容器 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400rpx;
+  background: #ffffff;
+  border-radius: 16rpx;
+  margin-top: 20rpx;
+}
+
+.loading-container text {
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 头像区域 */
 .avatar-section {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
   padding: 40rpx 0;
+  background-color: #fff;
+  margin-bottom: 20rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
-.avatar {
+.avatar-wrapper {
+  position: relative;
   width: 160rpx;
   height: 160rpx;
   border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.avatar-edit {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 24rpx;
+  text-align: center;
+  padding: 8rpx 0;
+}
+
+/* 信息列表 */
+.info-list {
+  background-color: #fff;
   margin-bottom: 20rpx;
-}
-
-.upload-btn {
-  font-size: 28rpx;
-  color: #4CAF50;
-}
-
-.info-section {
-  background: #ffffff;
   border-radius: 16rpx;
-  padding: 0 30rpx;
-  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
 .info-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 30rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #eee;
 }
 
 .info-item:last-child {
@@ -42,71 +81,209 @@
 }
 
 .label {
-  width: 140rpx;
+  color: #333;
   font-size: 28rpx;
-  color: #666;
+  width: 140rpx;
+  flex-shrink: 0;
+}
+
+.value-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
 }
 
 .value {
-  flex: 1;
+  color: #666;
   font-size: 28rpx;
-  color: #333;
+  margin-right: 16rpx;
+  text-align: right;
 }
 
-.edit-icon {
+.arrow {
   width: 32rpx;
   height: 32rpx;
-  opacity: 0.6;
+  flex-shrink: 0;
 }
 
-.device-section {
-  background: #ffffff;
+/* 监护关系区域 */
+.care-section {
+  background-color: #fff;
+  margin-bottom: 20rpx;
+  padding: 32rpx;
   border-radius: 16rpx;
-  padding: 30rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 24rpx;
+  padding-left: 16rpx;
+  border-left: 6rpx solid #4CAF50;
+}
+
+.care-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.care-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 16rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.care-item:last-child {
+  border-bottom: none;
+}
+
+.name {
+  font-size: 28rpx;
+  color: #333;
+  flex: 1;
+}
+
+.phone {
+  font-size: 28rpx;
+  color: #666;
+  margin-left: 32rpx;
+}
+
+/* 家庭信息区域 */
+.family-section {
+  background: #fff;
+  padding: 24rpx;
+  margin: 20rpx;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
 .section-title {
   font-size: 32rpx;
   font-weight: 500;
   color: #333;
-  margin-bottom: 30rpx;
+  margin-bottom: 16rpx;
+}
+
+.family-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.family-address-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.family-label {
+  font-size: 28rpx;
+  color: #666;
+  margin-right: 8rpx;
+}
+
+.family-address {
+  font-size: 28rpx;
+  color: #333;
+  flex: 1;
+  word-break: break-all;
+}
+
+.arrow {
+  width: 32rpx;
+  height: 32rpx;
+  margin-left: 16rpx;
+}
+
+.section-hover {
+  opacity: 0.8;
+}
+
+/* 设备列表区域 */
+.device-section {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
 .device-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20rpx;
+  gap: 24rpx;
+  padding: 16rpx 0;
 }
 
 .device-item {
   background: #f8f8f8;
   border-radius: 12rpx;
-  padding: 20rpx;
+  padding: 24rpx;
   display: flex;
   align-items: center;
 }
 
 .device-icon {
-  width: 60rpx;
-  height: 60rpx;
-  margin-right: 16rpx;
+  width: 64rpx;
+  height: 64rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
 }
 
 .device-info {
   flex: 1;
+  min-width: 0;
 }
 
 .device-name {
   font-size: 26rpx;
   color: #333;
   display: block;
+  margin-bottom: 8rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .device-status {
   font-size: 24rpx;
   color: #ff3b30;
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  background: rgba(255, 59, 48, 0.1);
+  border-radius: 100rpx;
 }
 
 .device-status.online {
   color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.button-section {
+  padding: 20rpx 32rpx 40rpx;
+}
+
+.edit-button {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background: #4CAF50;
+  color: #fff;
+  font-size: 32rpx;
+  border-radius: 44rpx;
+  font-weight: normal;
+}
+
+.edit-button::after {
+  border: none;
+}
+
+.edit-button:active {
+  opacity: 0.8;
 } 

@@ -23,11 +23,39 @@
     "miniprogram": {
       "list": [
         {
-          "name": "pages/device-add/device-add",
-          "pathName": "pages/device-add/device-add",
+          "name": "pages/user-profile/user-profile",
+          "pathName": "pages/user-profile/user-profile",
           "query": "",
           "scene": null,
           "launchMode": "default"
+        },
+        {
+          "name": "pages/user-profile/user-profile",
+          "pathName": "pages/user-profile/user-profile",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/user-profile/user-profile",
+          "pathName": "pages/user-profile/user-profile",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/user-profile/user-profile",
+          "pathName": "pages/user-profile/user-profile",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/device-add/device-add",
+          "pathName": "pages/device-add/device-add",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "pages/device-manage/device-manage",
