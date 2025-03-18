@@ -29,6 +29,9 @@ Page({
     const timeString = now.toLocaleTimeString('zh-CN', { hour12: false });
     this.setData({ currentTime: timeString });
   },
+  handleBack: function (options) {
+    wx.navigateBack()
+  },
 
   // 切换播放/暂停
   togglePlay() {

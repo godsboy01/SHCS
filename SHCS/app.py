@@ -21,6 +21,7 @@ def create_app():
     from routes.camera import camera_bp
     from routes.device import device_bp
     from routes.profile import profile_bp
+    from routes.records import records_bp  # 新增导入
     # from routes.health import health_bp
 
     # 注册蓝图
@@ -30,6 +31,7 @@ def create_app():
     app.register_blueprint(camera_bp, url_prefix='/api/camera')
     app.register_blueprint(device_bp, url_prefix='/api/device')
     app.register_blueprint(profile_bp)
+    app.register_blueprint(records_bp)  # 新增注册
     # app.register_blueprint(health_bp, url_prefix='/api/health')
 
     return app

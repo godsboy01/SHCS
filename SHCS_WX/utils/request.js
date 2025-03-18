@@ -1,5 +1,6 @@
 const BASE_URL = 'http://localhost:5000/api';
-
+// 正确导入（假设路径正确）
+// const { api } = require('../../utils/api'); // 解构赋值
 // 请求拦截器
 const requestInterceptor = (options) => {
   const token = wx.getStorageSync('token');
