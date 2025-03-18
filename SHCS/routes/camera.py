@@ -10,7 +10,7 @@ import numpy as np
 
 from datetime import datetime
 from ultralytics import YOLO
-from models.models import FallDetectionRecord, db
+from models.models import FallDetectionRecord, SittingRecord, db
 from app import create_app
 from flask import Blueprint, send_from_directory
 from utils.logger import camera_logger, detection_logger, db_logger
@@ -28,11 +28,12 @@ SIT_DIR = os.path.join(SNAPSHOT_DIR, "sit")  # 坐下截图保存目录
 os.makedirs(FALL_DIR, exist_ok=True)
 os.makedirs(SIT_DIR, exist_ok=True)
 
+
 class VideoCamera(object):
     _instance = None
     _clients = 0
     _lock = Lock()
-    SIT_CONSECUTIVE_THRESHOLD = 3  # 连续检测到坐下的次数阈值
+    SIT_CONSECUTIVE_THRESHOLD = 1  # 连续检测到坐下的次数阈值
 
     def __new__(cls):
         if cls._instance is None:
@@ -57,7 +58,7 @@ class VideoCamera(object):
                     (0, cv2.CAP_ANY),
                     (0, cv2.CAP_MSMF)
                 ]
-                
+
                 for camera_id, api_preference in methods:
                     try:
                         self.video = cv2.VideoCapture(camera_id, api_preference)
@@ -66,7 +67,7 @@ class VideoCamera(object):
                             self.video.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
                             self.video.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
                             self.video.set(cv2.CAP_PROP_FPS, 15)
-                            
+
                             # 初始化其他属性
                             self.model = YOLO("models/fall.pt")
                             self.fall_start_time = None
@@ -78,18 +79,18 @@ class VideoCamera(object):
                             self.sit_snapshot_taken = False
                             self.sit_message_id = 1
                             self.sit_consecutive_count = 0
-                            
+
                             print(f"成功使用方法 {api_preference} 初始化摄像头")
                             return True
                     except Exception as e:
                         print(f"摄像头初始化方法 {api_preference} 失败: {str(e)}")
                         continue
-                
-                print(f"重试 {i+1}/{max_retries}")
+
+                print(f"重试 {i + 1}/{max_retries}")
                 time.sleep(1)
             except Exception as e:
                 print(f"摄像头初始化异常: {str(e)}")
-        
+
         return False
 
     def add_client(self):
@@ -109,7 +110,7 @@ class VideoCamera(object):
         """获取视频帧，包含错误处理"""
         if not hasattr(self, 'video') or self.video is None:
             return None, 0
-            
+
         try:
             if self.video.isOpened():
                 success, image = self.video.read()
@@ -129,7 +130,7 @@ class VideoCamera(object):
                     return self.get_frame()
         except Exception as e:
             print(f"获取帧时发生错误: {str(e)}")
-        
+
         return None, 0
 
     def detect_fall_and_sit(self, frame_np):
@@ -140,7 +141,7 @@ class VideoCamera(object):
         results = self.model(frame_np, verbose=False)
         fall_flag = False
         sit_flag = False
-        
+
         for result in results:
             for box in result.boxes:
                 label = self.model.names[int(box.cls)]
@@ -170,14 +171,14 @@ class VideoCamera(object):
                                 logging.info(f"跌倒截图 {snapshot_filename} 保存成功")
                                 print("跌倒截图保存成功")
                                 self.fall_snapshots_taken.append(snapshot_time)
-                                detection_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-                                save_fall_record(
-                                    elderly_id=1,  # 替换为实际的 elderly_id
-                                    device_id=1,  # 替换为实际的 device_id
-                                    detection_time=detection_time,
-                                    detection_type='Fall',
-                                    video_frame_path=snapshot_path
+
+                                # 保存检测记录到数据库
+                                save_fall_detection(
+                                    elderly_id=1,  # 这里可以根据实际情况修改
+                                    device_id=1,  # 这里可以根据实际情况修改
+                                    snapshot_path=snapshot_path
                                 )
+
                                 if len(self.fall_snapshots_taken) == len(FALL_SNAPSHOT_TIMES):
                                     self.fall_message_id += 1
                                     self.is_falling = False
@@ -190,35 +191,43 @@ class VideoCamera(object):
                 self.is_falling = False
                 self.fall_start_time = None
 
-            # 处理坐下检测
+            # 处理久坐检测
             if sit_flag:
-                self.sit_consecutive_count += 1
-                if self.sit_consecutive_count >= self.SIT_CONSECUTIVE_THRESHOLD:
-                    if not self.is_sitting:
-                        self.sit_start_time = time.time()
-                        self.is_sitting = True
-                        self.sit_snapshot_taken = False
-                        self.sit_sub_dir = os.path.join(SIT_DIR, str(self.sit_message_id))
-                        os.makedirs(self.sit_sub_dir, exist_ok=True)
-                    else:
-                        current_time = time.time()
-                        elapsed_time = current_time - self.sit_start_time
-                        if elapsed_time >= SIT_SNAPSHOT_TIME - 0.1 and not self.sit_snapshot_taken:
-                            snapshot_filename = f"{self.sit_message_id}-0.jpg"
-                            snapshot_path = os.path.join(self.sit_sub_dir, snapshot_filename)
-                            cv2.imwrite(snapshot_path, frame_np)
-                            print("久坐截图保存成功")
-                            self.sit_snapshot_taken = True
-                            self.sit_message_id += 1
-                            self.is_sitting = False
-                            self.sit_start_time = None
+                if not self.is_sitting:
+                    self.sit_start_time = time.time()
+                    self.is_sitting = True
+                    self.sit_snapshot_taken = False
+                    self.sit_sub_dir = os.path.join(SIT_DIR, str(self.sit_message_id))
+                    os.makedirs(self.sit_sub_dir, exist_ok=True)
+
+                    # 创建新的久坐记录
+                    save_sitting_record(
+                        elderly_id=1,  # 这里可以根据实际情况修改
+                        device_id=1  # 这里可以根据实际情况修改
+                    )
+                else:
+                    current_time = time.time()
+                    elapsed_time = current_time - self.sit_start_time
+                    if elapsed_time >= SIT_SNAPSHOT_TIME and not self.sit_snapshot_taken:
+                        snapshot_filename = f"{self.sit_message_id}-0.jpg"
+                        snapshot_path = os.path.join(self.sit_sub_dir, snapshot_filename)
+                        cv2.imwrite(snapshot_path, frame_np)
+                        print("久坐截图保存成功")
+                        self.sit_snapshot_taken = True
+                        self.sit_message_id += 1
             else:
-                self.sit_consecutive_count = 0
+                if self.is_sitting:
+                    # 结束久坐记录
+                    update_sitting_record_end(
+                        elderly_id=1,  # 这里可以根据实际情况修改
+                        device_id=1  # 这里可以根据实际情况修改
+                    )
                 self.is_sitting = False
                 self.sit_start_time = None
 
         alert_level = 10 if fall_flag or sit_flag else 0
         return frame_np, alert_level
+
 
 def gen(camera):
     while True:
@@ -231,6 +240,7 @@ def gen(camera):
         else:
             print("未获取到有效帧，跳过本次传输。")
         time.sleep(0.05)  # 控制帧率为20fps
+
 
 def start_detection(camera):
     """检测线程的主函数"""
@@ -245,6 +255,7 @@ def start_detection(camera):
                 #     print(f"检测到事件，警报级别: {alert_level}")
         time.sleep(0.5)  # 控制检测频率
 
+
 camera = VideoCamera()
 
 # 启动检测线程
@@ -252,11 +263,13 @@ detection_thread = Thread(target=start_detection, args=(camera,))
 detection_thread.daemon = True
 detection_thread.start()
 
+
 @camera_bp.route('/video_feed')
 @cross_origin()
 def video_feed():
     return Response(gen(camera),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 @camera_bp.route('/alert_level')
 @cross_origin()
@@ -268,6 +281,7 @@ def get_alert_level():
         return jsonify({"alert_level": alert_level})
     else:
         return jsonify({"error": "无法获取帧数据"}), 500
+
 
 @camera_bp.route('/fall_snapshots')
 @cross_origin()
@@ -283,6 +297,7 @@ def get_fall_snapshots():
                         'path': os.path.join(sub_dir_path, filename)
                     })
     return jsonify(fall_snapshots)
+
 
 @camera_bp.route('/sit_snapshots')
 @cross_origin()
@@ -300,25 +315,98 @@ def get_sit_snapshots():
     return jsonify(sit_snapshots)
 
 
+def save_fall_detection(elderly_id, device_id, snapshot_path):
+    """
+    保存跌倒检测记录到数据库
 
-def save_fall_record(elderly_id, device_id, detection_time, detection_type, video_frame_path):
-    """独立的保存记录函数"""
+    Args:
+        elderly_id (int): 老人ID
+        device_id (int): 设备ID
+        snapshot_path (str): 截图路径
+    """
     try:
+        # 创建应用上下文
         app = create_app()
         with app.app_context():
+            # 创建新的检测记录
+            detection_time = datetime.now()
             record = FallDetectionRecord(
                 elderly_id=elderly_id,
                 device_id=device_id,
                 detection_time=detection_time,
-                detection_type=detection_type,
-                confidence=0.8,
-                video_frame_path=video_frame_path
+                detection_type='Fall',
+                confidence=0.8,  # 可以根据实际检测结果调整
+                video_frame_path=snapshot_path
             )
+
+            # 添加并保存到数据库
+            db.session.add(record)
+            db.session.commit()
+
+            camera_logger.info(f"成功保存跌倒检测记录：老人ID={elderly_id}, 设备ID={device_id}, 时间={detection_time}")
+
     except Exception as e:
-        app = create_app()
+        camera_logger.error(f"保存跌倒检测记录失败: {str(e)}")
+        # 发生错误时回滚
         with app.app_context():
             db.session.rollback()
-        logging.error(f"保存 {detection_type} 记录失败: {str(e)}")
+
+
+def save_sitting_record(elderly_id, device_id):
+    """
+    保存久坐检测记录到数据库
+
+    Args:
+        elderly_id (int): 老人ID
+        device_id (int): 设备ID
+    """
+    try:
+        app = create_app()
+        with app.app_context():
+            current_time = datetime.now()
+            # 创建新的久坐记录，只使用模型中存在的字段
+            record = SittingRecord(
+                elderly_id=elderly_id,
+                device_id=device_id,
+                start_time=current_time
+            )
+            db.session.add(record)
+            db.session.commit()
+            camera_logger.info(f"创建新的久坐记录：老人ID={elderly_id}, 设备ID={device_id}, 开始时间={current_time}")
     except Exception as e:
-        logging.error(f"保存 {detection_type} 记录失败: {str(e)}")
-        db.session.rollback()
+        camera_logger.error(f"保存久坐记录失败: {str(e)}")
+        with app.app_context():
+            db.session.rollback()
+
+
+def update_sitting_record_end(elderly_id, device_id):
+    """
+    更新久坐记录的结束时间
+
+    Args:
+        elderly_id (int): 老人ID
+        device_id (int): 设备ID
+    """
+    try:
+        app = create_app()
+        with app.app_context():
+            active_record = SittingRecord.query.filter_by(
+                elderly_id=elderly_id,
+                device_id=device_id,
+                end_time=None
+            ).first()
+
+            if active_record:
+                current_time = datetime.now()
+                duration = int((current_time - active_record.start_time).total_seconds())
+
+                active_record.end_time = current_time
+                active_record.duration = duration
+
+                db.session.commit()
+                camera_logger.info(f"结束久坐记录：老人ID={elderly_id}, 设备ID={device_id}, 持续时间={duration}秒")
+
+    except Exception as e:
+        camera_logger.error(f"更新久坐记录结束时间失败: {str(e)}")
+        with app.app_context():
+            db.session.rollback()
