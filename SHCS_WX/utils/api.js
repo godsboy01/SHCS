@@ -105,36 +105,110 @@ const api = {
     getDevices: (params) => request('/device/devices', {
       method: 'GET',
       header: {
-        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
       },
       data: params
+    }).then(res => {
+      if (res.code === 200) {
+        return res.data;
+      }
+      throw new Error(res.message || '获取设备列表失败');
     }),
+    
     // 获取设备详情
     getDeviceDetail: (deviceId) => request(`/device/devices/${deviceId}`, {
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
+      }
+    }).then(res => {
+      if (res.code === 200) {
+        return res.data;
+      }
+      throw new Error(res.message || '获取设备详情失败');
+    }),
+    
+    // 添加设备
+    addDevice: (data) => request('/device/devices', {
+      method: 'POST',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
+      },
+      data
+    }).then(res => {
+      if (res.code === 201) {
+        return res.data;
+      }
+      throw new Error(res.message || '添加设备失败');
+    }),
+    
+    // 更新设备
+    updateDevice: (deviceId, data) => request(`/device/devices/${deviceId}`, {
+      method: 'PUT',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
+      },
+      data
+    }).then(res => {
+      if (res.code === 200) {
+        return res.data;
+      }
+      throw new Error(res.message || '更新设备失败');
+    }),
+    
+    // 删除设备
+    deleteDevice: (deviceId) => request(`/device/devices/${deviceId}`, {
+      method: 'DELETE',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
+      }
+    }).then(res => {
+      if (res.code === 200) {
+        return res.data;
+      }
+      throw new Error(res.message || '删除设备失败');
+    }),
+    
+    // 更新设备状态
+    updateDeviceStatus: (deviceId, status) => request(`/device/devices/${deviceId}/status`, {
+      method: 'PUT',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
+      },
+      data: { status }
+    }).then(res => {
+      if (res.code === 200) {
+        return res.data;
+      }
+      throw new Error(res.message || '更新设备状态失败');
+    })
+  },
+  // 摄像头相关API
+  camera: {
+    // 获取跌倒记录
+    getFallRecords: (userId) => request('/camera/fall_records', {
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      },
+      data: { user_id: userId }
+    }),
+    // 获取跌倒截图
+    getFallSnapshot: (fallDir, filename) => request(`/camera/fall_snapshots/${fallDir}/${filename}`, {
       method: 'GET',
       header: {
         'Authorization': `Bearer ${wx.getStorageSync('token')}`
       }
     }),
-    // 添加设备
-    addDevice: (data) => request('/device/devices', {
-      method: 'POST',
-      header: {
-        'Authorization': `Bearer ${wx.getStorageSync('token')}`
-      },
-      data
-    }),
-    // 更新设备
-    updateDevice: (deviceId, data) => request(`/device/devices/${deviceId}`, {
-      method: 'PUT',
-      header: {
-        'Authorization': `Bearer ${wx.getStorageSync('token')}`
-      },
-      data
-    }),
-    // 删除设备
-    deleteDevice: (deviceId) => request(`/device/devices/${deviceId}`, {
-      method: 'DELETE',
+    // 获取警报级别
+    getAlertLevel: () => request('/camera/alert_level', {
+      method: 'GET',
       header: {
         'Authorization': `Bearer ${wx.getStorageSync('token')}`
       }

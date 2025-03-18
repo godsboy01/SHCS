@@ -42,6 +42,8 @@ class CameraManager:
             self.video = None
             self.is_running = False
             camera_logger.info("摄像头已停止")
+
+
             
     def get_frame(self):
         """获取一帧图像"""

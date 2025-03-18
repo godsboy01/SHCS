@@ -2,67 +2,37 @@ const { api } = require('../../utils/api')
 
 Page({
   data: {
-    videoSrc: '',      // 视频帧地址
-    isPlaying: false,  // 是否播放中（初始状态为未播放）
-    isLoading: true,   // 加载状态
-    errorMessage: '',  // 错误信息
+    videoSrc: '',      // 视频流地址
+    isPlaying: false,  // 是否正在播放
     currentTime: '',   // 当前时间
-    deviceInfo: {      // 设备信息
-      name: '',
-      location: ''
-    }
+    familyName: '张',   // 家庭名称
+    errorMsg: '',      // 错误信息
+    alertLevel: 0,     // 警报级别
+    fallSnapshots: [], // 跌倒截图列表
+    sitSnapshots: [],  // 坐下截图列表
   },
 
-  onLoad(options) {
-    // 获取传入的设备ID
-    const deviceId = options.id;
-    
-    // 获取设备信息
-    this.loadDeviceInfo(deviceId);
-    
-    // 初始化时间并启动定时器
+  onLoad() {
+    // 初始化时间
     this.updateTime();
     this.timeUpdateTimer = setInterval(() => {
       this.updateTime();
     }, 1000);
-  },
-
-  // 加载设备信息
-  async loadDeviceInfo(deviceId) {
-    try {
-      const res = await api.device.getDeviceDetail(deviceId);
-      if (res) {
-        this.setData({
-          'deviceInfo.name': res.device_name || '未命名设备',
-          'deviceInfo.location': res.location || '未设置位置'
-        });
-      }
-    } catch (err) {
-      console.error('获取设备信息失败:', err);
-      wx.showToast({
-        title: '获取设备信息失败',
-        icon: 'none'
-      });
-    }
+    
+    // 启动警报检测
+    // this.startAlertDetection();
   },
 
   // 更新时间
   updateTime() {
     const now = new Date();
-    const timeString = now.toLocaleTimeString('zh-CN', { hour12: false }); // 24小时制
+    const timeString = now.toLocaleTimeString('zh-CN', { hour12: false });
     this.setData({ currentTime: timeString });
-  },
-
-  // 返回上一页
-  handleBack() {
-    wx.navigateBack();
   },
 
   // 切换播放/暂停
   togglePlay() {
     const { isPlaying } = this.data;
-    this.setData({ isPlaying: !isPlaying });
-
     if (isPlaying) {
       this.stopVideoStream();
     } else {
@@ -72,25 +42,89 @@ Page({
 
   // 开始视频流
   startVideoStream() {
+    const timestamp = Date.now();
     this.setData({
+      videoSrc: `http://127.0.0.1:5000/api/camera/video_feed`,
       isPlaying: true,
-      isLoading: false,
-      videoSrc: `http://127.0.0.1:5000/api/camera/video_feed?t=${Date.now()}`
+      errorMsg: ''
     });
   },
 
   // 停止视频流
   stopVideoStream() {
     this.setData({
+      videoSrc: '',
       isPlaying: false,
-      videoSrc: ''
+      errorMsg: ''
     });
   },
 
+  // 处理视频错误
+  handleVideoError(e) {
+    console.error('视频加载失败:', e);
+    this.setData({
+      errorMsg: '摄像头连接失败，请检查摄像头是否正常连接',
+      isPlaying: false
+    });
+  },
+
+  // 启动警报检测
+//   startAlertDetection() {
+//     this.alertDetectionTimer = setInterval(() => {
+//       if (this.data.isPlaying) {
+//         wx.request({
+//           url: 'http://127.0.0.1:5000/api/camera/alert_level',
+//           success: (res) => {
+//             if (res.data && res.data.alert_level !== undefined) {
+//               this.setData({ alertLevel: res.data.alert_level });
+//             }
+//           },
+//           fail: (err) => {
+//             console.error('获取警报级别失败:', err);
+//           }
+//         });
+//       }
+//     }, 1000);
+
+    // 定期更新截图列表
+//     this.updateSnapshotsTimer = setInterval(() => {
+//       this.updateSnapshots();
+//     }, 5000);
+//   },
+
+//   // 更新截图列表
+//   updateSnapshots() {
+//     // 获取跌倒截图
+//     wx.request({
+//       url: 'http://127.0.0.1:5000/api/camera/fall_snapshots',
+//       success: (res) => {
+//         if (res.data) {
+//           this.setData({ fallSnapshots: res.data });
+//         }
+//       }
+//     });
+
+//     // 获取坐下截图
+//     wx.request({
+//       url: 'http://127.0.0.1:5000/api/camera/sit_snapshots',
+//       success: (res) => {
+//         if (res.data) {
+//           this.setData({ sitSnapshots: res.data });
+//         }
+//       }
+//     });
+//   },
+
   onUnload() {
-    // 页面卸载时清除定时器和停止视频流
+    // 页面卸载时清理资源
     if (this.timeUpdateTimer) {
       clearInterval(this.timeUpdateTimer);
+    }
+    if (this.alertDetectionTimer) {
+      clearInterval(this.alertDetectionTimer);
+    }
+    if (this.updateSnapshotsTimer) {
+      clearInterval(this.updateSnapshotsTimer);
     }
     this.stopVideoStream();
   }

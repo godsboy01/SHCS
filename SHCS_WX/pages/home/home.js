@@ -53,22 +53,35 @@ Page({
     try {
       const res = await api.device.getDevices();
       if (res && res.devices) {
+        // 按设备类型分类
+        const devices = res.devices;
+        const cameras = devices.filter(d => d.device_type === 'camera');
+        const weightScales = devices.filter(d => d.device_type === 'weight_scale');
+        const bloodPressures = devices.filter(d => d.device_type === 'blood_pressure');
+
         this.setData({
-          cameras: res.devices.filter(d => d.device_type === 'camera'),
-          weightScales: res.devices.filter(d => d.device_type === 'weight_scale'),
-          bloodPressures: res.devices.filter(d => d.device_type === 'blood_pressure')
+          cameras,
+          weightScales,
+          bloodPressures,
+          loading: false
         });
       } else {
-        throw new Error('获取设备列表失败');
+        throw new Error('设备列表数据格式错误');
       }
     } catch (err) {
       console.error('加载设备失败:', err);
       wx.showToast({
-        title: '加载失败',
-        icon: 'none'
+        title: err.message || '加载失败',
+        icon: 'none',
+        duration: 2000
+      });
+      this.setData({
+        cameras: [],
+        weightScales: [],
+        bloodPressures: [],
+        loading: false
       });
     } finally {
-      this.setData({ loading: false });
       wx.stopPullDownRefresh();
     }
   },

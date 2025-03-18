@@ -130,12 +130,11 @@
 
 /* 添加天气小组件样式 */
 .weather-widget {
-  background: linear-gradient(135deg, #4CAF50, #2E7D32);
-  border-radius: 16rpx;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-radius: 20rpx;
   padding: 30rpx;
   margin-bottom: 30rpx;
-  color: #0e0c0c;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  color: #ffffff;
 }
 
 .weather-info {
@@ -146,18 +145,18 @@
 
 .temp-wrap {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
 }
 
 .temperature {
-  font-size: 64rpx;
-  font-weight: 500;
-  margin-right: 16rpx;
+  font-size: 48rpx;
+  font-weight: bold;
+  line-height: 1;
 }
 
 .weather-text {
   font-size: 28rpx;
-  opacity: 0.9;
+  margin-top: 10rpx;
 }
 
 .location-wrap {
@@ -165,12 +164,64 @@
 }
 
 .location {
-  font-size: 32rpx;
+  font-size: 28rpx;
   display: block;
-  margin-bottom: 8rpx;
 }
 
 .date {
   font-size: 24rpx;
   opacity: 0.8;
+  margin-top: 10rpx;
+  display: block;
+}
+
+/* 加载状态样式 */
+.loading-container {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 4rpx solid #f3f3f3;
+  border-top: 4rpx solid #4CAF50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  margin-top: 20rpx;
+  font-size: 28rpx;
+  color: #999999;
+}
+
+/* 空状态样式 */
+.empty-container {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 40rpx;
+}
+
+.empty-icon {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999999;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

@@ -27,9 +27,7 @@ class User(db.Model):
 
     # 关系定义
     devices = db.relationship('Device', backref='owner', lazy=True, foreign_keys='Device.user_id')
-    fall_records = db.relationship('FallDetectionRecord', backref='elderly', lazy=True, foreign_keys='FallDetectionRecord.elderly_id')
-    sitting_records = db.relationship('SittingRecord', backref='elderly', lazy=True, foreign_keys='SittingRecord.elderly_id')
-    health_records = db.relationship('HealthRecord', backref='elderly', lazy=True, foreign_keys='HealthRecord.elderly_id')
+    managed_devices = db.relationship('Device', backref='elderly', lazy=True, foreign_keys='Device.elderly_id')
     
     # 监护关系
     as_guardian = db.relationship('CareRelationship', backref='guardian', lazy=True, foreign_keys='CareRelationship.guardian_id')
@@ -62,22 +60,23 @@ class Device(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     description = db.Column(db.Text)
 
-    # 关系定义
-    elderly = db.relationship('User', foreign_keys=[elderly_id], backref='managed_devices')
-    # owner关系已经通过User.devices定义
-
 class FallDetectionRecord(db.Model):
     __tablename__ = 'fall_detection_records'
     record_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     elderly_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     device_id = db.Column(db.Integer, db.ForeignKey('devices.device_id'), nullable=False)
     detection_time = db.Column(db.DateTime, default=db.func.current_timestamp())
-    detection_type = db.Column(db.Enum('Fall', 'Normal'), nullable=False)
+    detection_type = db.Column(db.Enum('Fall', 'Normal', 'Sitting'), nullable=False)
     confidence = db.Column(db.Float)
     video_frame_path = db.Column(db.String(255))
     is_notified = db.Column(db.Boolean, default=False)
+    status = db.Column(db.String(20))
+    processed = db.Column(db.Boolean, default=False)
+    processed_at = db.Column(db.DateTime)
 
+    # 关系定义
     device = db.relationship('Device', backref='fall_records', lazy=True)
+    elderly = db.relationship('User', foreign_keys=[elderly_id], backref='fall_records')
 
 class SittingRecord(db.Model):
     __tablename__ = 'sitting_records'
@@ -90,6 +89,7 @@ class SittingRecord(db.Model):
     is_notified = db.Column(db.Boolean, default=False)
 
     device = db.relationship('Device', backref='sitting_records', lazy=True)
+    elderly = db.relationship('User', foreign_keys=[elderly_id], backref='sitting_records')
 
 class HealthRecord(db.Model):
     __tablename__ = 'health_records'
@@ -103,6 +103,8 @@ class HealthRecord(db.Model):
     heart_rate = db.Column(db.Integer)
     temperature = db.Column(db.Numeric(3, 1))
     recorded_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    elderly = db.relationship('User', foreign_keys=[elderly_id], backref='health_records')
 
 class HealthThreshold(db.Model):
     __tablename__ = 'health_thresholds'

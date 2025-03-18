@@ -1,47 +1,97 @@
+const { api } = require('../../utils/api');
+
 Page({
   data: {
     activeTab: 0, // 当前选中标签
-    messages: []
+    messages: [],
+    fallRecords: []
   },
 
   // 切换消息分类
   switchTab(e) {
     const index = e.currentTarget.dataset.index;
     this.setData({ activeTab: index });
-    this.fetchMessages();  // 重新获取数据
+    if (index === 0) {
+      this.fetchMessages();
+    } else {
+      this.fetchFallRecords();
+    }
   },
 
   // 获取通知数据
   fetchMessages() {
-    const userId = 1;  // 假设是用户ID 1，实际中应该获取真实的用户 ID
+    const userId = wx.getStorageSync('user_id');
+    if (!userId) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      });
+      return;
+    }
     
-    wx.request({
-      url: `http://127.0.0.1:5000/api/message/messages_user/${userId}`,
-      method: 'GET',
-      success: res => {
-        if (res.data.code === 200) {
-          this.setData({
-            messages: res.data.data
-          });
-        }
-      },
-      fail: err => {
-        console.error("请求失败", err);
-      }
+    api.message.getUserMessages(userId).then(res => {
+      this.setData({
+        messages: res.data
+      });
+    }).catch(err => {
+      console.error("获取消息失败", err);
+      wx.showToast({
+        title: '获取消息失败',
+        icon: 'none'
+      });
+    });
+  },
+
+  // 获取跌倒记录
+  fetchFallRecords() {
+    const userId = wx.getStorageSync('user_id');
+    if (!userId) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      });
+      return;
+    }
+
+    api.camera.getFallRecords(userId).then(res => {
+      this.setData({
+        fallRecords: res.data
+      });
+    }).catch(err => {
+      console.error("获取跌倒记录失败", err);
+      wx.showToast({
+        title: '获取跌倒记录失败',
+        icon: 'none'
+      });
     });
   },
 
   // 查看消息详情
   viewDetail(e) {
-    const messageId = e.currentTarget.dataset.id;
-    console.log('传递的 messageId:', messageId);
-    wx.navigateTo({
-      url: `/pages/message-detail/message-detail?record_id=1`
-    });
+    const { id, type } = e.currentTarget.dataset;
+    if (type === 'fall') {
+      wx.navigateTo({
+        url: `/pages/fall-detail/fall-detail?record_id=${id}`
+      });
+    } else {
+      wx.navigateTo({
+        url: `/pages/message-detail/message-detail?record_id=${id}`
+      });
+    }
   },
 
   // 页面加载时
   onLoad() {
-    this.fetchMessages();  // 加载数据
+    this.fetchMessages();
+  },
+
+  // 下拉刷新
+  onPullDownRefresh() {
+    if (this.data.activeTab === 0) {
+      this.fetchMessages();
+    } else {
+      this.fetchFallRecords();
+    }
+    wx.stopPullDownRefresh();
   }
 });

@@ -1,46 +1,39 @@
 <!-- pages/notifications/notifications.wxml -->
-<view class="page">
-  <navigation-bar title="通知中心" back="{{false}}" homeButton="{{true}}" color="#000000" background="#ffffff">
-    <view slot="right">
-      <button bindtap="goToSettings">设置</button>
-    </view>
-  </navigation-bar>
+<view class="container">
+  <!-- 顶部标签栏 -->
+  <view class="tabs">
+    <view class="tab {{activeTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">系统通知</view>
+    <view class="tab {{activeTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">跌倒记录</view>
+  </view>
 
-  <!-- 消息分类筛选 -->
-  <view class="filter-bar">
-    <view class="filter-item {{activeTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">
-      全部
-    </view>
-    <view class="filter-item {{activeTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">
-      跌倒提醒
-    </view>
-    <view class="filter-item {{activeTab === 2 ? 'active' : ''}}" bindtap="switchTab" data-index="2">
-      健康提醒
+  <!-- 系统通知列表 -->
+  <view class="message-list" wx:if="{{activeTab === 0}}">
+    <view class="message-item" wx:for="{{messages}}" wx:key="id" bindtap="viewDetail" data-id="{{item.id}}" data-type="message">
+      <view class="message-content">
+        <view class="message-title">{{item.title}}</view>
+        <view class="message-text">{{item.content}}</view>
+      </view>
+      <view class="message-time">{{item.create_time}}</view>
     </view>
   </view>
 
-  <!-- 消息列表 --><scroll-view class="message-list" scroll-y>
-  <block wx:for="{{messages}}" wx:key="message_id">
-    <view class="message-item {{item.is_read ? '' : 'unread'}}" bindtap="viewDetail" data-id="{{item.message_id}}">
-      <view class="icon-wrapper">
-        <image src="{{item.type === 'fall' ? '../../assets/icon/health.png' : '../../assets/icon/fall.png'}}" class="type-icon" />
-        <view wx:if="{{!item.is_read}}" class="unread-badge"></view>
-      </view>
-
-      <view class="content">
-        <view class="header">
-          <text class="title">{{item.type === 'fall' ? '健康警报' : '跌倒警报'}}</text>
-          <text class="time">{{formatTime(item.timestamp)}}</text>
+  <!-- 跌倒记录列表 -->
+  <view class="message-list" wx:if="{{activeTab === 1}}">
+    <view class="message-item fall-record" wx:for="{{fallRecords}}" wx:key="record_id" bindtap="viewDetail" data-id="{{item.record_id}}" data-type="fall">
+      <view class="message-content">
+        <view class="message-title">跌倒检测</view>
+        <view class="message-text">
+          <text>检测时间：{{item.detection_time}}</text>
+          <text>置信度：{{item.confidence}}</text>
         </view>
-        <text class="summary">{{item.message}}</text>
       </view>
+      <view class="message-time">{{item.detection_time}}</view>
     </view>
-  </block>
-
-  <view wx:if="{{messages.length === 0}}" class="empty">
-    <image src="/images/icon-empty.png" class="empty-icon" />
-    <text class="empty-text">暂无消息</text>
   </view>
-</scroll-view>
 
+  <!-- 空状态提示 -->
+  <view class="empty-state" wx:if="{{(activeTab === 0 && messages.length === 0) || (activeTab === 1 && fallRecords.length === 0)}}">
+    <image class="empty-icon" src="/assets/icon/empty.png" mode="aspectFit"></image>
+    <text class="empty-text">暂无{{activeTab === 0 ? '通知' : '跌倒记录'}}</text>
+  </view>
 </view>

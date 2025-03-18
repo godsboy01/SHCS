@@ -1,4 +1,5 @@
 const QQ_MAP_KEY = 'YOUR_KEY'; // 替换为您的腾讯地图密钥
+const DEFAULT_CITY = '南京市';
 
 const weatherService = {
   // 获取位置信息
@@ -12,8 +13,8 @@ const weatherService = {
             scope: 'scope.userLocation'
           });
         } catch (err) {
-          console.error('用户拒绝了位置权限:', err);
-          return null;
+          console.log('用户拒绝了位置权限，使用默认城市');
+          return { city: DEFAULT_CITY };
         }
       }
 
@@ -24,28 +25,28 @@ const weatherService = {
         });
         
         if (!location) {
-          console.error('获取位置信息失败');
-          return null;
+          console.log('获取位置信息失败，使用默认城市');
+          return { city: DEFAULT_CITY };
         }
 
         // 获取城市信息
         const cityInfo = await this.getCityFromLocation(location);
-        return cityInfo;
+        return cityInfo || { city: DEFAULT_CITY };
       } catch (err) {
-        console.error('获取位置失败:', err);
-        return null;
+        console.log('获取位置失败，使用默认城市:', err);
+        return { city: DEFAULT_CITY };
       }
     } catch (error) {
-      console.error('位置服务异常:', error);
-      return null;
+      console.log('位置服务异常，使用默认城市:', error);
+      return { city: DEFAULT_CITY };
     }
   },
 
   // 根据经纬度获取城市信息
   async getCityFromLocation(location) {
     if (!location || !location.latitude || !location.longitude) {
-      console.error('位置信息不完整');
-      return null;
+      console.log('位置信息不完整，使用默认城市');
+      return { city: DEFAULT_CITY };
     }
 
     try {
@@ -63,23 +64,19 @@ const weatherService = {
           district: res.data.result.address_component.district
         };
       }
-      console.error('获取城市信息失败:', res);
-      return null;
+      console.log('获取城市信息失败，使用默认城市:', res);
+      return { city: DEFAULT_CITY };
     } catch (error) {
-      console.error('解析城市信息失败:', error);
-      return null;
+      console.log('解析城市信息失败，使用默认城市:', error);
+      return { city: DEFAULT_CITY };
     }
   },
 
   // 获取天气信息
   async getWeather(city) {
     if (!city) {
-      console.error('城市信息为空');
-      return {
-        temp: '--',
-        text: '未知',
-        location: '定位失败'
-      };
+      console.log('城市信息为空，使用默认城市');
+      city = DEFAULT_CITY;
     }
 
     try {
@@ -91,7 +88,7 @@ const weatherService = {
         location: city
       };
     } catch (error) {
-      console.error('获取天气信息失败:', error);
+      console.log('获取天气信息失败:', error);
       return {
         temp: '--',
         text: '获取失败',

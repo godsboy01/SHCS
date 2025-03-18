@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from extensions import db, socketio  # 从extensions导入db和socketio
 from config import Config
+from multiprocessing import freeze_support
 
 def create_app():
     app = Flask(__name__)
@@ -17,15 +18,10 @@ def create_app():
     from routes.auth import auth_bp
     from routes.family import family_bp
     from routes.message import message_bp
-    from routes.camera import camera_bp, get_camera_instance
+    from routes.camera import camera_bp
     from routes.device import device_bp
     from routes.profile import profile_bp
     # from routes.health import health_bp
-
-    # 将摄像头实例注入到应用上下文中
-    app.camera = get_camera_instance()
-    # 将 SocketIO 实例注入到应用上下文中
-    app.socketio = socketio
 
     # 注册蓝图
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -39,6 +35,9 @@ def create_app():
     return app
 
 if __name__ == '__main__':
+    # Windows下多进程支持
+    freeze_support()
+    
     app = create_app()
     with app.app_context():
         db.create_all()  # 创建数据库表
