@@ -1,39 +1,107 @@
 <!-- pages/notifications/notifications.wxml -->
+<navigation-bar 
+  title="消息通知" 
+  back="{{false}}" 
+  background="#4CAF50" 
+  color="#ffffff"
+/>
+
 <view class="container">
   <!-- 顶部标签栏 -->
   <view class="tabs">
-    <view class="tab {{activeTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">系统通知</view>
-    <view class="tab {{activeTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">跌倒记录</view>
-  </view>
-
-  <!-- 系统通知列表 -->
-  <view class="message-list" wx:if="{{activeTab === 0}}">
-    <view class="message-item" wx:for="{{messages}}" wx:key="id" bindtap="viewDetail" data-id="{{item.id}}" data-type="message">
-      <view class="message-content">
-        <view class="message-title">{{item.title}}</view>
-        <view class="message-text">{{item.content}}</view>
-      </view>
-      <view class="message-time">{{item.create_time}}</view>
+    <view class="tab {{activeTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-index="0">
+      跌倒记录
+      <view class="tab-line" wx:if="{{activeTab === 0}}"></view>
+    </view>
+    <view class="tab {{activeTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-index="1">
+      久坐提醒
+      <view class="tab-line" wx:if="{{activeTab === 1}}"></view>
+    </view>
+    <view class="tab {{activeTab === 2 ? 'active' : ''}}" bindtap="switchTab" data-index="2">
+      健康记录
+      <view class="tab-line" wx:if="{{activeTab === 2}}"></view>
     </view>
   </view>
 
   <!-- 跌倒记录列表 -->
-  <view class="message-list" wx:if="{{activeTab === 1}}">
-    <view class="message-item fall-record" wx:for="{{fallRecords}}" wx:key="record_id" bindtap="viewDetail" data-id="{{item.record_id}}" data-type="fall">
+  <scroll-view class="message-list {{activeTab === 0 ? '' : 'hidden'}}" scroll-y enable-flex>
+    <view class="message-item" wx:for="{{fallRecords}}" wx:key="record_id" bindtap="viewDetail" data-id="{{item.record_id}}" data-type="fall">
+      <view class="message-icon">
+        <image src="/assets/icon/fall.png" mode="aspectFit"></image>
+      </view>
       <view class="message-content">
-        <view class="message-title">跌倒检测</view>
-        <view class="message-text">
-          <text>检测时间：{{item.detection_time}}</text>
-          <text>置信度：{{item.confidence}}</text>
+        <view class="message-title">
+          <text class="title-text">跌倒检测</text>
+          <text class="status {{item.processed ? 'processed' : 'unprocessed'}}">
+            {{item.processed ? '已处理' : '未处理'}}
+          </text>
+        </view>
+        <view class="message-text">{{item.message}}</view>
+        <view class="message-info">
+          <text class="elderly-name">{{item.elderly_name}}</text>
         </view>
       </view>
-      <view class="message-time">{{item.detection_time}}</view>
+    </view>
+    <!-- 分页控制 -->
+    <view class="pagination" wx:if="{{fallRecords.length > 0}}">
+      <view class="page-btn {{currentPage <= 1 || loading ? 'disabled' : ''}}" bindtap="prevPage">上一页</view>
+      <view class="page-info">
+        <text>第{{currentPage}}页</text>
+        <text class="total">/共{{Math.ceil(fallTotal/pageSize)}}页</text>
+      </view>
+      <view class="page-btn {{currentPage >= Math.ceil(fallTotal/pageSize) || loading ? 'disabled' : ''}}" bindtap="nextPage">下一页</view>
+    </view>
+    <!-- 空状态提示 -->
+    <view class="empty-state" wx:if="{{fallRecords.length === 0 && !loading}}">
+      <image class="empty-icon" src="/assets/icon/empty.png" mode="aspectFit"></image>
+      <text class="empty-text">暂无跌倒记录</text>
+    </view>
+  </scroll-view>
+
+  <!-- 久坐提醒列表 -->
+  <scroll-view class="message-list {{activeTab === 1 ? '' : 'hidden'}}" scroll-y enable-flex>
+    <view class="message-item" wx:for="{{sittingRecords}}" wx:key="record_id" bindtap="viewDetail" data-id="{{item.record_id}}" data-type="sitting">
+      <view class="message-icon">
+        <image src="/assets/icon/sitting.png" mode="aspectFit"></image>
+      </view>
+      <view class="message-content">
+        <view class="message-title">
+          <text class="title-text">久坐提醒</text>
+          <text class="duration">{{item.duration}}分钟</text>
+        </view>
+        <view class="message-text">{{item.message}}</view>
+        <view class="message-info">
+          <text class="elderly-name">{{item.elderly_name}}</text>
+        </view>
+      </view>
+    </view>
+    <!-- 分页控制 -->
+    <view class="pagination" wx:if="{{sittingRecords.length > 0}}">
+      <view class="page-btn {{currentPage <= 1 || loading ? 'disabled' : ''}}" bindtap="prevPage">上一页</view>
+      <view class="page-info">
+        <text>第{{currentPage}}页</text>
+        <text class="total">/共{{Math.ceil(sittingTotal/pageSize)}}页</text>
+      </view>
+      <view class="page-btn {{currentPage >= Math.ceil(sittingTotal/pageSize) || loading ? 'disabled' : ''}}" bindtap="nextPage">下一页</view>
+    </view>
+    <!-- 空状态提示 -->
+    <view class="empty-state" wx:if="{{sittingRecords.length === 0 && !loading}}">
+      <image class="empty-icon" src="/assets/icon/empty.png" mode="aspectFit"></image>
+      <text class="empty-text">暂无久坐记录</text>
+    </view>
+  </scroll-view>
+
+  <!-- 健康记录列表（预留） -->
+  <view class="message-list {{activeTab === 2 ? '' : 'hidden'}}">
+    <view class="empty-state">
+      <image class="empty-icon" src="/assets/icon/empty.png" mode="aspectFit"></image>
+      <text class="empty-text">健康记录功能开发中</text>
     </view>
   </view>
 
-  <!-- 空状态提示 -->
-  <view class="empty-state" wx:if="{{(activeTab === 0 && messages.length === 0) || (activeTab === 1 && fallRecords.length === 0)}}">
-    <image class="empty-icon" src="/assets/icon/empty.png" mode="aspectFit"></image>
-    <text class="empty-text">暂无{{activeTab === 0 ? '通知' : '跌倒记录'}}</text>
+  <!-- 加载中提示 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text>加载中...</text>
   </view>
 </view>

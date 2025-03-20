@@ -213,6 +213,109 @@ const api = {
         'Authorization': `Bearer ${wx.getStorageSync('token')}`
       }
     })
+  },
+  // 监控相关API
+  monitor: {
+    // 获取跌倒记录列表
+    getFallRecords: (params = {}) => request('/monitor/fall/list', {
+      method: 'GET',
+      data: params,
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      }
+    }),
+
+    // 获取跌倒记录详情
+    getFallDetail: (recordId) => request(`/monitor/fall/detail/${recordId}`, {
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      }
+    }),
+
+    // 获取久坐记录列表
+    getSittingRecords: (params = {}) => request('/monitor/sitting/list', {
+      method: 'GET',
+      data: params,
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      }
+    }),
+
+    // 获取久坐记录详情
+    getSittingDetail: (recordId) => request(`/monitor/sitting/detail/${recordId}`, {
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`
+      }
+    })
+  },
+  // 健康数据相关接口
+  health: {
+    // 获取图表数据
+    getChartData: (userId, params) => request(`/health/charts/${userId}`, {
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
+      },
+      data: params
+    }).then(res => {
+      console.log('API响应数据:', res);  // 添加日志
+      // 直接返回响应数据，让页面处理结果
+      return res;
+    }).catch(error => {
+      console.error('API请求错误:', error);  // 添加日志
+      throw error;
+    }),
+    
+    // 添加健康记录
+    addRecord: (data) => request('/health/record', {
+      method: 'POST',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
+      },
+      data
+    }).then(res => {
+      console.log('添加记录响应:', res);  // 添加日志
+      if (res.code === 200 || res.code === 201) {
+        return res.data;
+      }
+      throw new Error(res.message || '添加健康记录失败');
+    }).catch(error => {
+      console.error('添加记录错误:', error);  // 添加日志
+      throw error;
+    }),
+    
+    // 获取健康阈值
+    getThresholds: (userId) => request(`/health/thresholds/${userId}`, {
+      method: 'GET',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
+      }
+    }).then(res => {
+      if (res.code === 200) {
+        return res.data;
+      }
+      throw new Error(res.message || '获取健康阈值失败');
+    }),
+    
+    // 设置健康阈值
+    setThreshold: (data) => request('/health/threshold', {
+      method: 'POST',
+      header: {
+        'Authorization': `Bearer ${wx.getStorageSync('token')}`,
+        'Content-Type': 'application/json'
+      },
+      data
+    }).then(res => {
+      if (res.code === 201) {
+        return res.data;
+      }
+      throw new Error(res.message || '设置健康阈值失败');
+    })
   }
 };
 

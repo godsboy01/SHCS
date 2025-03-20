@@ -1,0 +1,53 @@
+<!-- pages/fall-detail/fall-detail.wxml -->
+<view class="nav-bar">
+  <view class="nav-bar-left" bindtap="goBack">
+    <image class="back-icon" src="/assets/icon/back.png" mode="aspectFit"></image>
+  </view>
+  <view class="nav-bar-title">跌倒详情</view>
+</view>
+
+<view class="container">
+  <view class="detail-card">
+    <view class="card-header">
+      <view class="header-title">基本信息</view>
+    </view>
+    <view class="info-list">
+      <view class="info-item">
+        <text class="label">姓名</text>
+        <text class="value">{{detail.elderly_name}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">检测时间</text>
+        <text class="value">{{detail.detection_time}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">检测位置</text>
+        <text class="value">{{detail.device_name}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">处理状态</text>
+        <text class="value {{detail.processed ? 'processed' : 'unprocessed'}}">
+          {{detail.processed ? '已处理' : '未处理'}}
+        </text>
+      </view>
+      <view class="info-item">
+        <text class="label">置信度</text>
+        <text class="value">{{detail.confidence}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="detail-card">
+    <view class="card-header">
+      <view class="header-title">现场图片</view>
+    </view>
+    <view class="image-container">
+      <image 
+        class="scene-image" 
+        src="{{imagePath}}" 
+        mode="aspectFit"
+        bindtap="previewImage"
+      ></image>
+    </view>
+  </view>
+</view> 

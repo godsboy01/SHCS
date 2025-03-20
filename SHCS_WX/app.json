@@ -13,7 +13,10 @@
     "pages/message-detail/message-detail",
     "pages/user-profile/user-profile",
     "pages/edit-family/edit-family",
-    "pages/family-manage/family-manage"
+    "pages/family-manage/family-manage",
+    "pages/fall-detail/fall-detail",
+    "pages/sitting-detail/sitting-detail",
+    "pages/weight-record/weight-record"
   ],
   "window": {
     "backgroundTextStyle": "light",

@@ -3,6 +3,7 @@ from flask_cors import CORS
 from extensions import db, socketio  # 从extensions导入db和socketio
 from config import Config
 from multiprocessing import freeze_support
+from routes import auth, family, device, monitor
 
 def create_app():
     app = Flask(__name__)
@@ -21,8 +22,9 @@ def create_app():
     from routes.camera import camera_bp
     from routes.device import device_bp
     from routes.profile import profile_bp
-    from routes.records import records_bp  # 新增导入
-    # from routes.health import health_bp
+    from routes.records import records_bp
+    from routes.health import health_bp
+    from routes.monitor import monitor_bp
 
     # 注册蓝图
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -31,8 +33,9 @@ def create_app():
     app.register_blueprint(camera_bp, url_prefix='/api/camera')
     app.register_blueprint(device_bp, url_prefix='/api/device')
     app.register_blueprint(profile_bp)
-    app.register_blueprint(records_bp)  # 新增注册
-    # app.register_blueprint(health_bp, url_prefix='/api/health')
+    app.register_blueprint(records_bp)
+    app.register_blueprint(monitor_bp, url_prefix='/api/monitor')
+    app.register_blueprint(health_bp, url_prefix='/api/health')
 
     return app
 

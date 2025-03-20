@@ -1,0 +1,54 @@
+<!-- pages/sitting-detail/sitting-detail.wxml -->
+<view class="nav-bar">
+  <view class="nav-bar-left" bindtap="goBack">
+    <image class="back-icon" src="/assets/icon/back.png" mode="aspectFit"></image>
+  </view>
+  <view class="nav-bar-title">久坐详情</view>
+</view>
+
+<view class="container">
+  <view class="detail-card">
+    <view class="card-header">
+      <view class="header-title">基本信息</view>
+    </view>
+    <view class="info-list">
+      <view class="info-item">
+        <text class="label">老人姓名</text>
+        <text class="value">{{detail.elderly_name}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">开始时间</text>
+        <text class="value">{{detail.start_time}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">结束时间</text>
+        <text class="value">{{detail.end_time || '尚未结束'}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">持续时间</text>
+        <text class="value duration">{{detail.duration}}分钟</text>
+      </view>
+      <view class="info-item">
+        <text class="label">检测位置</text>
+        <text class="value">{{detail.device_name}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">提醒状态</text>
+        <text class="value {{detail.is_notified ? 'processed' : 'unprocessed'}}">
+          {{detail.is_notified ? '已提醒' : '未提醒'}}
+        </text>
+      </view>
+    </view>
+  </view>
+
+  <view class="detail-card">
+    <view class="card-header">
+      <view class="header-title">温馨提示</view>
+    </view>
+    <view class="reminder-container">
+      <view class="reminder-icon">🌟</view>
+      <view class="reminder-text">亲爱的，您已经工作很久了</view>
+      <view class="reminder-desc">起来活动一下吧，适当休息能让工作更有效率哦！</view>
+    </view>
+  </view>
+</view> 

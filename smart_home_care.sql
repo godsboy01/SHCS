@@ -11,7 +11,7 @@
  Target Server Version : 50719 (5.7.19)
  File Encoding         : 65001
 
- Date: 17/03/2025 23:10:09
+ Date: 18/03/2025 22:04:29
 */
 
 SET NAMES utf8mb4;
@@ -70,7 +70,7 @@ CREATE TABLE `devices`  (
   INDEX `user_id`(`user_id`) USING BTREE,
   CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '???' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '???' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for fall_detection_records
@@ -78,22 +78,22 @@ CREATE TABLE `devices`  (
 DROP TABLE IF EXISTS `fall_detection_records`;
 CREATE TABLE `fall_detection_records`  (
   `record_id` int(11) NOT NULL AUTO_INCREMENT,
-  `elderly_id` int(11) NOT NULL COMMENT '????ID',
-  `device_id` int(11) NOT NULL COMMENT '????ID',
-  `detection_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '????',
-  `detection_type` enum('Fall','Normal','Sitting') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '检测类型',
-  `confidence` float NULL DEFAULT NULL COMMENT '???',
-  `video_frame_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '?????',
-  `is_notified` tinyint(1) NULL DEFAULT 0 COMMENT '?????',
-  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '状态',
-  `processed` tinyint(1) NULL DEFAULT 0 COMMENT '是否已处理',
-  `processed_at` datetime NULL DEFAULT NULL COMMENT '处理时间',
+  `elderly_id` int(11) NOT NULL,
+  `device_id` int(11) NOT NULL,
+  `detection_time` datetime NULL DEFAULT NULL,
+  `detection_type` enum('Fall','Normal','Sitting') CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL,
+  `confidence` float NULL DEFAULT NULL,
+  `video_frame_path` varchar(255) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
+  `is_notified` tinyint(1) NULL DEFAULT NULL,
+  `status` varchar(20) CHARACTER SET latin1 COLLATE latin1_swedish_ci NULL DEFAULT NULL,
+  `processed` tinyint(1) NULL DEFAULT NULL,
+  `processed_at` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`record_id`) USING BTREE,
-  INDEX `idx_elderly_time`(`elderly_id`, `detection_time`) USING BTREE,
+  INDEX `elderly_id`(`elderly_id`) USING BTREE,
   INDEX `device_id`(`device_id`) USING BTREE,
   CONSTRAINT `fall_detection_records_ibfk_1` FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `fall_detection_records_ibfk_2` FOREIGN KEY (`device_id`) REFERENCES `devices` (`device_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '???????' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 888 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for families
@@ -106,7 +106,7 @@ CREATE TABLE `families`  (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `address` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   PRIMARY KEY (`family_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for health_records
@@ -114,19 +114,19 @@ CREATE TABLE `families`  (
 DROP TABLE IF EXISTS `health_records`;
 CREATE TABLE `health_records`  (
   `record_id` int(11) NOT NULL AUTO_INCREMENT,
-  `elderly_id` int(11) NOT NULL COMMENT '????ID',
-  `height` decimal(5, 2) NULL DEFAULT NULL COMMENT '??(cm)',
-  `weight` decimal(5, 2) NULL DEFAULT NULL COMMENT '??(kg)',
-  `bmi` decimal(4, 2) NULL DEFAULT NULL COMMENT 'BMI??',
-  `systolic_pressure` int(11) NULL DEFAULT NULL COMMENT '???',
-  `diastolic_pressure` int(11) NULL DEFAULT NULL COMMENT '???',
-  `heart_rate` int(11) NULL DEFAULT NULL COMMENT '??',
-  `temperature` decimal(3, 1) NULL DEFAULT NULL COMMENT '??',
-  `recorded_at` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '????',
+  `elderly_id` int(11) NOT NULL,
+  `height` decimal(5, 2) NULL DEFAULT NULL,
+  `weight` decimal(5, 2) NULL DEFAULT NULL,
+  `bmi` decimal(4, 2) NULL DEFAULT NULL,
+  `systolic_pressure` int(11) NULL DEFAULT NULL,
+  `diastolic_pressure` int(11) NULL DEFAULT NULL,
+  `heart_rate` int(11) NULL DEFAULT NULL,
+  `temperature` decimal(3, 1) NULL DEFAULT NULL,
+  `recorded_at` datetime NULL DEFAULT NULL,
   PRIMARY KEY (`record_id`) USING BTREE,
-  INDEX `idx_elderly_time`(`elderly_id`, `recorded_at`) USING BTREE,
+  INDEX `elderly_id`(`elderly_id`) USING BTREE,
   CONSTRAINT `health_records_ibfk_1` FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '???????' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for health_thresholds
@@ -223,9 +223,9 @@ CREATE TABLE `notifications`  (
   INDEX `idx_source`(`source_type`, `source_id`) USING BTREE,
   INDEX `elderly_id`(`elderly_id`) USING BTREE,
   INDEX `fk_action_by`(`action_by`) USING BTREE,
+  CONSTRAINT `fk_action_by` FOREIGN KEY (`action_by`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`guardian_id`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `fk_action_by` FOREIGN KEY (`action_by`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `notifications_ibfk_2` FOREIGN KEY (`guardian_id`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '???' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -234,24 +234,18 @@ CREATE TABLE `notifications`  (
 DROP TABLE IF EXISTS `sitting_records`;
 CREATE TABLE `sitting_records`  (
   `record_id` int(11) NOT NULL AUTO_INCREMENT,
-  `elderly_id` int(11) NOT NULL COMMENT '????ID',
-  `device_id` int(11) NOT NULL COMMENT '????ID',
-  `start_time` datetime NOT NULL COMMENT '????',
-  `end_time` datetime NULL DEFAULT NULL COMMENT '????',
-  `duration` int(11) NULL DEFAULT NULL COMMENT '????(??)',
-  `is_notified` tinyint(1) NULL DEFAULT 0 COMMENT '?????',
-  `alert_threshold` int(11) NULL DEFAULT 30 COMMENT '久坐提醒阈值(分钟)',
-  `alert_sent` tinyint(1) NULL DEFAULT 0 COMMENT '是否已发送提醒',
-  `alert_sent_time` datetime NULL DEFAULT NULL COMMENT '提醒发送时间',
-  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT 'active' COMMENT '记录状态',
-  `break_count` int(11) NULL DEFAULT 0 COMMENT '休息次数',
-  `last_break_time` datetime NULL DEFAULT NULL COMMENT '最后休息时间',
+  `elderly_id` int(11) NOT NULL,
+  `device_id` int(11) NOT NULL,
+  `start_time` datetime NOT NULL,
+  `end_time` datetime NULL DEFAULT NULL,
+  `duration` int(11) NULL DEFAULT NULL,
+  `is_notified` tinyint(1) NULL DEFAULT NULL,
   PRIMARY KEY (`record_id`) USING BTREE,
-  INDEX `idx_elderly_time`(`elderly_id`, `start_time`) USING BTREE,
+  INDEX `elderly_id`(`elderly_id`) USING BTREE,
   INDEX `device_id`(`device_id`) USING BTREE,
   CONSTRAINT `sitting_records_ibfk_1` FOREIGN KEY (`elderly_id`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `sitting_records_ibfk_2` FOREIGN KEY (`device_id`) REFERENCES `devices` (`device_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '?????' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 190 CHARACTER SET = latin1 COLLATE = latin1_swedish_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for users
@@ -275,6 +269,6 @@ CREATE TABLE `users`  (
   INDEX `idx_phone`(`phone`) USING BTREE,
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`family_id`) REFERENCES `families` (`family_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `users_ibfk_2` FOREIGN KEY (`family_id`) REFERENCES `families` (`family_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '???' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 20 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '???' ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;

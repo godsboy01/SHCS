@@ -1,0 +1,6 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "ec-canvas": "../../components/echarts/ec-canvas"
+  }
+}

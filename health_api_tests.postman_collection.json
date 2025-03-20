@@ -1,0 +1,202 @@
+{
+	"info": {
+		"_postman_id": "health-api-collection",
+		"name": "健康管理API测试集合",
+		"description": "智能家居护理系统健康管理模块的API测试集合",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000/api/health",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. 添加健康记录",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": 1,\n    \"height\": 170,\n    \"weight\": 65,\n    \"systolic_pressure\": 120,\n    \"diastolic_pressure\": 80,\n    \"heart_rate\": 75,\n    \"temperature\": 36.5\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/record",
+					"host": ["{{base_url}}"],
+					"path": ["record"]
+				},
+				"description": "添加一条完整的健康记录，包含身高、体重、血压等信息"
+			}
+		},
+		{
+			"name": "2. 添加部分健康记录",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": 1,\n    \"systolic_pressure\": 118,\n    \"diastolic_pressure\": 78,\n    \"heart_rate\": 72\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/record",
+					"host": ["{{base_url}}"],
+					"path": ["record"]
+				},
+				"description": "添加部分健康数据（只有血压和心率）"
+			}
+		},
+		{
+			"name": "3. 更新健康记录",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"weight\": 64.5,\n    \"systolic_pressure\": 115,\n    \"diastolic_pressure\": 75\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/record/1",
+					"host": ["{{base_url}}"],
+					"path": ["record", "1"]
+				},
+				"description": "更新已存在的健康记录"
+			}
+		},
+		{
+			"name": "4. 删除健康记录",
+			"request": {
+				"method": "DELETE",
+				"url": {
+					"raw": "{{base_url}}/record/1",
+					"host": ["{{base_url}}"],
+					"path": ["record", "1"]
+				},
+				"description": "删除指定的健康记录"
+			}
+		},
+		{
+			"name": "5. 获取最近7天记录",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "{{base_url}}/records/1?days=7",
+					"host": ["{{base_url}}"],
+					"path": ["records", "1"],
+					"query": [
+						{
+							"key": "days",
+							"value": "7"
+						}
+					]
+				},
+				"description": "获取用户最近7天的健康记录"
+			}
+		},
+		{
+			"name": "6. 获取最近14天记录",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "{{base_url}}/records/1?days=14",
+					"host": ["{{base_url}}"],
+					"path": ["records", "1"],
+					"query": [
+						{
+							"key": "days",
+							"value": "14"
+						}
+					]
+				},
+				"description": "获取用户最近14天的健康记录"
+			}
+		},
+		{
+			"name": "7. 获取指定时间段记录",
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "{{base_url}}/records/1?start_date=2024-03-01&end_date=2024-03-18",
+					"host": ["{{base_url}}"],
+					"path": ["records", "1"],
+					"query": [
+						{
+							"key": "start_date",
+							"value": "2024-03-01"
+						},
+						{
+							"key": "end_date",
+							"value": "2024-03-18"
+						}
+					]
+				},
+				"description": "获取指定时间范围内的健康记录"
+			}
+		},
+		{
+			"name": "8. 设置BMI阈值",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"elderly_id\": 1,\n    \"metric_type\": \"bmi\",\n    \"min_value\": 18.5,\n    \"max_value\": 24.9,\n    \"warning_level\": \"normal\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/threshold",
+					"host": ["{{base_url}}"],
+					"path": ["threshold"]
+				},
+				"description": "设置BMI的正常范围阈值"
+			}
+		},
+		{
+			"name": "9. 设置血压阈值",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"elderly_id\": 1,\n    \"metric_type\": \"blood_pressure\",\n    \"min_value\": 90,\n    \"max_value\": 140,\n    \"warning_level\": \"warning\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/threshold",
+					"host": ["{{base_url}}"],
+					"path": ["threshold"]
+				},
+				"description": "设置血压的警戒范围阈值"
+			}
+		}
+	]
+} 

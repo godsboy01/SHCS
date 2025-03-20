@@ -131,7 +131,7 @@ Page({
     const formData = e.detail.value;
     const role = this.data.roleMap[this.data.roleIndex];
 
-    
+
     if (!formData.username || !formData.password || !formData.name || !formData.phone) {
       wx.showToast({
         title: '请填写完整信息',

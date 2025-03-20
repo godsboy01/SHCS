@@ -23,11 +23,25 @@
     "miniprogram": {
       "list": [
         {
+          "name": "pages/weight-record/weight-record",
+          "pathName": "pages/weight-record/weight-record",
+          "query": "userid=1",
+          "scene": null,
+          "launchMode": "default"
+        },
+        {
+          "name": "pages/notifications/notifications",
+          "pathName": "pages/notifications/notifications",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
           "name": "pages/user-profile/user-profile",
           "pathName": "pages/user-profile/user-profile",
           "query": "",
-          "scene": null,
-          "launchMode": "default"
+          "launchMode": "default",
+          "scene": null
         },
         {
           "name": "pages/user-profile/user-profile",

@@ -33,7 +33,7 @@ Page({
       if (device) {
         // 确保device_type存在，如果不存在则设为'other'
         device.device_type = device.device_type || 'other';
-        device.typeText = this.data.deviceTypes[device.device_type] || '未知';
+        device.typeText = this.data.deviceTypes[device.device_type];
         this.setData({ device });
       } else {
         wx.showToast({
@@ -71,22 +71,26 @@ Page({
     });
 
     try {
-      const res = await api.device.updateDevice(this.deviceId, formData);
-      if (res) {
-        wx.showToast({
-          title: '保存成功',
-          icon: 'success'
-        });
-        
-        // 刷新设备信息
-        this.loadDeviceInfo();
-      } else {
-        throw new Error('更新设备失败');
-      }
+      // 构造更新数据
+      const updateData = {
+        ...formData,
+        device_type: this.data.device.device_type,
+        elderly_id: this.data.device.elderly_id
+      };
+
+      await api.device.updateDevice(this.deviceId, updateData);
+      
+      wx.showToast({
+        title: '保存成功',
+        icon: 'success'
+      });
+      
+      // 刷新设备信息
+      await this.loadDeviceInfo();
     } catch (err) {
       console.error('更新设备失败:', err);
       wx.showToast({
-        title: err.data?.message || '保存失败',
+        title: '保存失败',
         icon: 'none'
       });
     } finally {

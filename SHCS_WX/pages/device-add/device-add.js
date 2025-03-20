@@ -1,4 +1,4 @@
-const api = require('../../utils/api');
+const { api } = require('../../utils/api');
 const app = getApp();
 
 Page({
@@ -10,6 +10,11 @@ Page({
       { value: 'other', text: '其他' }
     ],
     typeIndex: null
+  },
+
+  onShow() {
+    // 确保能获取到最新的用户信息
+    console.log('Current userInfo:', app.globalData.userInfo);
   },
 
   handleTypeChange(e) {
@@ -29,10 +34,21 @@ Page({
       return;
     }
 
+    // 获取当前登录用户ID
+    const userInfo = app.globalData.userInfo;
+    if (!userInfo || !userInfo.user_id) {
+      console.error('未能获取用户信息:', app.globalData);
+      wx.showToast({
+        title: '获取用户信息失败，请重试',
+        icon: 'none'
+      });
+      return;
+    }
+
     const deviceData = {
       ...formData,
       device_type: this.data.typeList[this.data.typeIndex].value,
-      elderly_id: app.globalData.userInfo.user_id
+      elderly_id: userInfo.user_id
     };
 
     wx.showLoading({

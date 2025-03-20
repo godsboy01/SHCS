@@ -42,8 +42,15 @@ Page({
       password
     }).then(res => {
       wx.hideLoading();
-      // 使用全局方法保存用户信息
-      app.login(res.user, res.token);
+      
+      // 构造完整的用户信息对象
+      const userInfo = {
+        user_id: res.user_id,
+        role: res.role
+      };
+      
+      // 使用全局方法保存用户信息和token
+      app.login(userInfo, res.token);
       
       wx.showToast({
         title: '登录成功',

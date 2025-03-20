@@ -94,7 +94,7 @@ class SittingRecord(db.Model):
 class HealthRecord(db.Model):
     __tablename__ = 'health_records'
     record_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    elderly_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     height = db.Column(db.Numeric(5, 2))
     weight = db.Column(db.Numeric(5, 2))
     bmi = db.Column(db.Numeric(4, 2))
@@ -104,16 +104,42 @@ class HealthRecord(db.Model):
     temperature = db.Column(db.Numeric(3, 1))
     recorded_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    elderly = db.relationship('User', foreign_keys=[elderly_id], backref='health_records')
+    user = db.relationship('User', foreign_keys=[user_id], backref='health_records')
+
+    def to_dict(self):
+        return {
+            'record_id': self.record_id,
+            'user_id': self.user_id,
+            'height': float(self.height) if self.height else None,
+            'weight': float(self.weight) if self.weight else None,
+            'bmi': float(self.bmi) if self.bmi else None,
+            'systolic_pressure': self.systolic_pressure,
+            'diastolic_pressure': self.diastolic_pressure,
+            'heart_rate': self.heart_rate,
+            'temperature': float(self.temperature) if self.temperature else None,
+            'recorded_at': self.recorded_at.strftime('%Y-%m-%d %H:%M:%S') if self.recorded_at else None
+        }
 
 class HealthThreshold(db.Model):
     __tablename__ = 'health_thresholds'
     threshold_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    elderly_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     metric_type = db.Column(db.Enum('bmi', 'blood_pressure', 'heart_rate', 'temperature', 'sitting_duration'), nullable=False)
     min_value = db.Column(db.Numeric(5, 2))
     max_value = db.Column(db.Numeric(5, 2))
     warning_level = db.Column(db.Enum('normal', 'warning', 'danger'), nullable=False, default='normal')
+
+    user = db.relationship('User', foreign_keys=[user_id], backref='health_thresholds')
+
+    def to_dict(self):
+        return {
+            'threshold_id': self.threshold_id,
+            'user_id': self.user_id,
+            'metric_type': self.metric_type,
+            'min_value': float(self.min_value) if self.min_value else None,
+            'max_value': float(self.max_value) if self.max_value else None,
+            'warning_level': self.warning_level
+        }
 
 class Notification(db.Model):
     __tablename__ = 'notifications'
